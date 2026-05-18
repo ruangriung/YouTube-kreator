@@ -1,4 +1,4 @@
-export async function callPollinationsAI(prompt: string, systemInstruction?: string): Promise<string> {
+export async function callPollinationsAI(prompt: string, systemInstruction?: string, model: string = 'openai'): Promise<string> {
   const token = import.meta.env.VITE_GEMINI_API_KEY || 
                 import.meta.env.VITE_POLLINATIONS_API_KEY || 
                 (typeof process !== 'undefined' ? (process.env.GEMINI_API_KEY || process.env.POLLINATIONS_API_KEY) : '') || 
@@ -28,8 +28,9 @@ export async function callPollinationsAI(prompt: string, systemInstruction?: str
     },
     body: JSON.stringify({
       messages,
-      model: 'openai',
-      temperature: 0.7
+      model,
+      temperature: 0.75,
+      seed: Math.floor(Math.random() * 10000000)
     })
   });
 

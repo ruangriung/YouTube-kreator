@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { callPollinationsAI } from './lib/pollinations';
-import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CheckCircle2, Download } from 'lucide-react';
+import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CheckCircle2, Download, Loader2, Cpu, ChevronDown, LogOut, ShieldAlert } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Cell } from 'recharts';
 import { initAuth, getAccessToken, logout } from './lib/auth';
 import LandingPage from './components/LandingPage';
@@ -344,6 +344,15 @@ export default function App() {
   const [isAutopilotRunning, setIsAutopilotRunning] = useState(false);
   const autopilotRef = React.useRef(false);
   
+  const [models, setModels] = useState<any[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ytBuilder_selectedModel') || 'openai';
+    }
+    return 'openai';
+  });
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  
   const isTopicUnsaved = topic.trim() !== globalTopic && topic.trim() !== '';
 
   useEffect(() => {
@@ -363,6 +372,27 @@ export default function App() {
         });
         setSectionData(defaultData);
     }
+
+    const fetchModels = async () => {
+      try {
+        const res = await fetch('https://gen.pollinations.ai/models');
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            // Hanya ambil model untuk generasi teks (bukan gambar, video, musik, dsb)
+            const textModels = list.filter((m: any) => 
+              m.output_modalities?.includes('text') && 
+              !m.is_specialized
+            );
+            setModels(textModels);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal memuat list model:", err);
+      }
+    };
+    fetchModels();
+
     initAuth(
       async (user, token) => {
         setUserData(user);
@@ -386,6 +416,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('ytBuilder_sectionData', JSON.stringify(sectionData));
   }, [sectionData]);
+
+  useEffect(() => {
+    localStorage.setItem('ytBuilder_selectedModel', selectedModel);
+  }, [selectedModel]);
 
   const handleGoogleLogin = async () => {
     // Deprecated since we use LandingPage login
@@ -478,9 +512,9 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah asisten AI yang singkat, jelas, dan sangat memotivasi untuk kreator YouTube.";
-        const prompt = `Berikan SATU ide/tips taktis yang sangat spesifik (1-2 kalimat) dan SATU kalimat motivasi berapi-api untuk kreator YouTube dengan topik "${globalTopic}" yang sedang berada di langkah: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Tolong jangan panjang lebar.`;
+        const prompt = `Berikan SATU ide/tips taktis yang sangat spesifik (1-2 kalimat) dan SATU kalimat motivasi berapi-api untuk kreator YouTube dengan topik "${globalTopic}" yang sedang berada di langkah: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Tolong jangan panjang lebar. (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
 
-        const text = await callPollinationsAI(prompt, systemInstruction);
+        const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
         if (text) {
             setSectionData(prev => ({
@@ -513,9 +547,9 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah Direktur Seni (Art Director) YouTube visual yang jenius.";
-        const prompt = `Berikan 3 ide visual yang sangat berbeda (misal: konsep thumbnail, shot B-roll, atau overlay grafis) yang sejalan dengan topik "${globalTopic}" untuk tahap: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Deskripsikan setiap ide visual secara singkat dan jelas (1-2 kalimat per ide). Buat terstruktur dengan emoji.`;
+        const prompt = `Berikan 3 ide visual yang sangat berbeda (misal: konsep thumbnail, shot B-roll, atau overlay grafis) yang sejalan dengan topik "${globalTopic}" untuk tahap: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Deskripsikan setiap ide visual secara singkat dan jelas (1-2 kalimat per ide). Buat terstruktur dengan emoji. (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
 
-        const text = await callPollinationsAI(prompt, systemInstruction);
+        const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
         if (text) {
             setSectionData(prev => ({
@@ -537,8 +571,8 @@ export default function App() {
   const suggestTopicAI = async () => {
     try {
         setTopic("Menggali ide dari AI...");
-        const prompt = "Berikan 1 ide niche/topik channel YouTube berbahasa Indonesia yang sedang tren saat ini, tapi belum terlalu jenuh. Contoh format: 'Review Gadget Unik', 'Jelajah Kuliner Pedas'. Hanya berikan nama topiknya saja, maksimal 5-6 kata, tanpa penjelasan apa-apa.";
-        const text = await callPollinationsAI(prompt);
+        const prompt = `Berikan 1 ide niche/topik channel YouTube berbahasa Indonesia yang sedang tren saat ini, tapi belum terlalu jenuh. Contoh format: 'Review Gadget Unik', 'Jelajah Kuliner Pedas'. Hanya berikan nama topiknya saja, maksimal 5-6 kata, tanpa penjelasan apa-apa. (Ide #${Math.floor(Math.random() * 1000000)})`;
+        const text = await callPollinationsAI(prompt, undefined, selectedModel);
         setTopic(text.trim().replace(/^['"]|['"]$/g, ''));
     } catch (error) {
         setTopic("");
@@ -660,9 +694,9 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah Ahli Algoritma YouTube kelas dunia. Berikan saran taktis, langkah nyata, draf naskah konkret yang siap digunakan. Gunakan Bahasa Indonesia yang segar, kasual, bertenaga, dan sangat aplikatif. Format langsung aksi nyatanya dalam list poin yang rapi.";
-        const prompt = section.getPrompt(globalTopic, sectionDataRef.current[section.id].params);
+        const prompt = section.getPrompt(globalTopic, sectionDataRef.current[section.id].params) + ` (Variasi Unik #${Math.floor(Math.random() * 1000000)})`;
 
-        const text = await callPollinationsAI(prompt, systemInstruction);
+        const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
         if (text) {
             setSectionData(prev => ({
@@ -736,7 +770,148 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen pb-20 relative">
+    <div className="min-h-screen pb-20 relative bg-[#09090b] text-white">
+      {/* Sticky Navbar with Model Selector & User Avatar */}
+      <nav className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/80 py-3.5 px-6 flex items-center justify-between shadow-lg">
+        {/* Left: Branding Logo */}
+        <div className="flex items-center gap-3">
+          <div className="bg-red-600 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 active:scale-95 transition-transform duration-200">
+            <Brain className="w-5 h-5 text-white animate-pulse" />
+          </div>
+          <div>
+            <span className="font-black text-sm tracking-widest text-white block uppercase">YT KREATOR</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block -mt-1">AI COMMAND CENTER</span>
+          </div>
+        </div>
+
+        {/* Right: Dynamic Model Selector & User Dropdown */}
+        <div className="flex items-center gap-4">
+          {/* Dynamic Model Dropdown */}
+          <div className="relative group">
+            <div className="flex items-center gap-1.5 bg-zinc-900/90 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
+              <Cpu className="w-3.5 h-3.5 text-red-500 animate-pulse" />
+              <span className="max-w-[120px] truncate uppercase">{selectedModel}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+            </div>
+            <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1.5 overflow-hidden">
+              <div className="px-3.5 py-1.5 border-b border-zinc-800/60 mb-1">
+                <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Pilih Model AI Teks</span>
+              </div>
+              {models.length > 0 ? (
+                models.map((modelName) => (
+                  <button
+                    key={modelName}
+                    onClick={() => setSelectedModel(modelName)}
+                    className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                  >
+                    <span className="truncate uppercase">{modelName}</span>
+                    {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                  </button>
+                ))
+              ) : (
+                ['openai', 'mistral', 'qwen', 'llama'].map((modelName) => (
+                  <button
+                    key={modelName}
+                    onClick={() => setSelectedModel(modelName)}
+                    className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                  >
+                    <span className="truncate uppercase">{modelName}</span>
+                    {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* User Avatar + Dropdown */}
+          <div className="relative group">
+            <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/80 rounded-xl p-1.5 pr-3 hover:border-zinc-700 transition-all cursor-pointer">
+              <img
+                src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
+                alt="Avatar"
+                className="w-7 h-7 rounded-lg object-cover ring-1 ring-zinc-700/60"
+              />
+              <div className="hidden md:flex flex-col text-left">
+                <span className="text-xs font-bold text-white truncate max-w-[100px]">{userData.name || 'Creator'}</span>
+                <span className="text-[9px] text-zinc-500 font-semibold truncate max-w-[100px]">{userData.email}</span>
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+            </div>
+            
+            <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1.5 overflow-hidden">
+              <div className="px-4 py-2 border-b border-zinc-800/60 mb-1 flex items-center gap-3">
+                <img
+                  src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
+                  alt="Avatar"
+                  className="w-9 h-9 rounded-lg object-cover ring-1 ring-zinc-700/60"
+                />
+                <div className="flex flex-col text-left overflow-hidden">
+                  <span className="text-xs font-black text-white truncate">{userData.name || 'Creator'}</span>
+                  <span className="text-[10px] text-zinc-400 font-bold truncate">{userData.email}</span>
+                  {userData.role === 'admin' && (
+                    <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[8px] font-black uppercase tracking-wider w-max">
+                      <ShieldAlert className="w-2 h-2" /> Administrator
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {userData.role === 'admin' && (
+                <button
+                  onClick={() => setIsAdminOpen(true)}
+                  className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors hover:bg-zinc-800 flex items-center gap-2"
+                >
+                  <ShieldAlert className="w-4 h-4 text-orange-500" />
+                  Panel Admin
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  logout();
+                  window.location.reload();
+                }}
+                className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:text-red-400 transition-colors hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800/60 mt-1"
+              >
+                <LogOut className="w-4 h-4" />
+                Keluar Sesi
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Admin Panel Modal Overlay */}
+      {isAdminOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-all duration-300">
+          <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/50">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-orange-500 animate-pulse" />
+                <h2 className="font-black text-sm tracking-wider text-white uppercase">Panel Admin YouTube Kreator</h2>
+              </div>
+              <button 
+                onClick={() => setIsAdminOpen(false)} 
+                className="text-zinc-400 hover:text-white text-xs bg-zinc-900 border border-zinc-800 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-zinc-800"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto bg-[#09090b]">
+              <AdminPanel />
+            </div>
+            <div className="p-4 border-t border-zinc-800/80 bg-zinc-900/30 text-right">
+              <button 
+                onClick={() => setIsAdminOpen(false)} 
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-lg active:scale-95"
+              >
+                Tutup Panel Admin
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl transition-transform duration-300 overflow-hidden ${isModalOpen ? 'scale-100' : 'scale-95'}`}>
           <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-950">
@@ -880,10 +1055,6 @@ export default function App() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 mt-8 space-y-6">
-        
-        {userData?.role === 'ADMIN' && (
-          <AdminPanel />
-        )}
 
         {/* Charts Dashboard */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -983,14 +1154,14 @@ export default function App() {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                           <button onClick={() => getQuickTip(section)} disabled={sData.tipLoading} className={`text-xs font-bold text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${sData.tipLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                              {sData.tipLoading ? <><BrainCircuit className="w-4 h-4 animate-pulse" /> Memikirkan...</> : <><Sparkles className="w-4 h-4" /> Motivasi & Tips</>}
+                              {sData.tipLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Memikirkan...</> : <><Sparkles className="w-4 h-4" /> Motivasi & Tips</>}
                           </button>
                           <button onClick={() => getVisualIdeas(section)} disabled={sData.visualLoading} className={`text-xs font-bold text-blue-500 hover:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${sData.visualLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                              {sData.visualLoading ? <><Palette className="w-4 h-4 animate-pulse" /> Melukis...</> : <><Palette className="w-4 h-4" /> Ide Visual Baru</>}
+                              {sData.visualLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Melukis...</> : <><Palette className="w-4 h-4" /> Ide Visual Baru</>}
                           </button>
                       </div>
                       <button onClick={() => runAI(section)} disabled={sData.loading} className={`w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-6 py-2 rounded-lg transition-all flex items-center justify-center gap-2 ${sData.loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                          {sData.loading ? 'Memproses Strategi...' : 'Jalankan Analisis AI'}
+                          {sData.loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Berpikir Mendalam...</> : 'Jalankan Analisis AI'}
                       </button>
                   </div>
                   {sData.tipResult && (
@@ -1011,7 +1182,7 @@ export default function App() {
                                 <Sparkles className="w-5 h-5 text-yellow-500 absolute -top-1 -right-2 animate-bounce" />
                               </div>
                               <p className="text-sm text-zinc-300 font-bold tracking-wider uppercase animate-pulse text-center">
-                                Pollinations AI Sedang Memikirkan Strategi...
+                                Berpikir Mendalam...
                               </p>
                               <div className="flex gap-1">
                                 <span className="w-2 h-2 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
