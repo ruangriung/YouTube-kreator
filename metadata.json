@@ -1,0 +1,8 @@
+{
+  "name": "CreatorBlueprint",
+  "description": "Sistem autopilot berbasis AI untuk merencanakan konten YouTube, mulai dari riset niche, jadwal produksi, hingga scripting, yang terintegrasi Google Calendar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
