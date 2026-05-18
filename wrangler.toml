@@ -6,4 +6,4 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "creator-db"
 # GANTI database_id DI BAWAH INI DENGAN UUID DARI CLOUDFLARE DASHBOARD ANDA SEBELUM DEPLOY!
-database_id = "local-dev-mock-id"
+database_id = "ba9d3721-9604-46ef-9efc-9a3b1dc92550"
