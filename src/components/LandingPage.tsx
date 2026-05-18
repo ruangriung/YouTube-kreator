@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Sparkles, BrainCircuit, CalendarDays, Rocket, Play, ChevronRight, Loader2 } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { verifyAccount } from '../lib/auth';
@@ -136,8 +137,15 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       </section>
 
       {/* Footer */}
-      <footer className="w-full text-center py-8 text-zinc-500 border-t border-zinc-900 z-10 text-xs">
-        <p>&copy; {new Date().getFullYear()} CreatorBlueprint. Built with AI Studio.</p>
+      <footer className="w-full py-8 border-t border-zinc-900 z-10">
+        <div className="max-w-7xl mx-auto px-6 text-center space-y-4">
+          <div className="text-zinc-500 text-xs flex items-center justify-center gap-4">
+            <Link to="/privacy-policy" className="hover:text-red-500 transition-colors">Privacy Policy</Link>
+            <span>&bull;</span>
+            <Link to="/terms-of-service" className="hover:text-red-500 transition-colors">Terms of Service</Link>
+          </div>
+          <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} CreatorBlueprint. Built with AI Studio.</p>
+        </div>
       </footer>
     </div>
   );
