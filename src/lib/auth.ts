@@ -44,6 +44,20 @@ export const verifyAccount = async (accessToken: string) => {
   return data.user;
 };
 
+export const verifyLocalDevAccount = async () => {
+  const mockUser = {
+    email: 'developer@local.dev',
+    name: 'Local Developer',
+    picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80',
+    role: 'ADMIN'
+  };
+  cachedAccessToken = 'local_dev_token';
+  cachedUser = mockUser;
+  localStorage.setItem('google_access_token', 'local_dev_token');
+  localStorage.setItem('google_user', JSON.stringify(mockUser));
+  return mockUser;
+};
+
 export const getAccessToken = async (): Promise<string | null> => {
   return cachedAccessToken;
 };

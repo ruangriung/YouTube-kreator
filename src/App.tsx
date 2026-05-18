@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
-import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CalendarDays, CheckCircle2, Download } from 'lucide-react';
+import { callPollinationsAI } from './lib/pollinations';
+import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CheckCircle2, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Cell } from 'recharts';
 import { initAuth, getAccessToken, logout } from './lib/auth';
-import { getCalendars, createEvent } from './lib/calendar';
-import { extractEventsFromText } from './lib/extractor';
 import LandingPage from './components/LandingPage';
 import AdminPanel from './components/AdminPanel';
 
@@ -343,9 +341,6 @@ export default function App() {
 
   const [userData, setUserData] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [calendars, setCalendars] = useState<any[]>([]);
-  const [selectedCalendarId, setSelectedCalendarId] = useState<string>('primary');
-  const [isSyncingCalendar, setIsSyncingCalendar] = useState<Record<number, boolean>>({});
   const [isAutopilotRunning, setIsAutopilotRunning] = useState(false);
   const autopilotRef = React.useRef(false);
   
@@ -372,18 +367,9 @@ export default function App() {
       async (user, token) => {
         setUserData(user);
         setLoadingAuth(false);
-        try {
-          const cals = await getCalendars();
-          setCalendars(cals);
-          const primaryCal = cals.find((c: any) => c.primary) || cals[0];
-          if (primaryCal) setSelectedCalendarId(primaryCal.id);
-        } catch (error) {
-          console.error("Failed to fetch calendars", error);
-        }
       },
       () => {
         setUserData(null);
-        setCalendars([]);
         setLoadingAuth(false);
       }
     );
@@ -405,34 +391,7 @@ export default function App() {
     // Deprecated since we use LandingPage login
   };
 
-  const handleSyncToCalendar = async (section: any) => {
-    const sData = sectionData[section.id];
-    if (!sData?.result) return;
-    
-    setIsSyncingCalendar(prev => ({...prev, [section.id]: true}));
-    try {
-      const extractedEvents = await extractEventsFromText(sData.result);
-      if (extractedEvents.length === 0) {
-        showToast("Tidak ada jadwal yang dapat diekstrak dari hasil AI ini.");
-        setIsSyncingCalendar(prev => ({...prev, [section.id]: false}));
-        return;
-      }
 
-      const confirmed = window.confirm(`AI menemukan ${extractedEvents.length} kegiatan untuk disinkronkan ke kalender. Anda yakin ingin melanjutkan?`);
-      if (!confirmed) {
-        setIsSyncingCalendar(prev => ({...prev, [section.id]: false}));
-        return;
-      }
-
-      await Promise.all(extractedEvents.map(event => createEvent(selectedCalendarId, event)));
-      showToast(`Berhasil menyinkronkan ${extractedEvents.length} kegiatan ke Kalender!`);
-    } catch (err: any) {
-      console.error(err);
-      showToast(`Gagal menyinkronkan: ${err.message}`);
-    } finally {
-      setIsSyncingCalendar(prev => ({...prev, [section.id]: false}));
-    }
-  };
 
   const exportAllToMarkdown = () => {
     if (!globalTopic) {
@@ -518,23 +477,15 @@ export default function App() {
     }));
 
     try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '');
-        const ai = new GoogleGenAI({ apiKey });
         const systemInstruction = "Anda adalah asisten AI yang singkat, jelas, dan sangat memotivasi untuk kreator YouTube.";
         const prompt = `Berikan SATU ide/tips taktis yang sangat spesifik (1-2 kalimat) dan SATU kalimat motivasi berapi-api untuk kreator YouTube dengan topik "${globalTopic}" yang sedang berada di langkah: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Tolong jangan panjang lebar.`;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                systemInstruction,
-            },
-        });
+        const text = await callPollinationsAI(prompt, systemInstruction);
 
-        if (response.text) {
+        if (text) {
             setSectionData(prev => ({
                 ...prev,
-                [section.id]: { ...prev[section.id], tipLoading: false, tipResult: response.text }
+                [section.id]: { ...prev[section.id], tipLoading: false, tipResult: text }
             }));
         } else {
              throw new Error("No text response");
@@ -561,23 +512,15 @@ export default function App() {
     }));
 
     try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '');
-        const ai = new GoogleGenAI({ apiKey });
         const systemInstruction = "Anda adalah Direktur Seni (Art Director) YouTube visual yang jenius.";
         const prompt = `Berikan 3 ide visual yang sangat berbeda (misal: konsep thumbnail, shot B-roll, atau overlay grafis) yang sejalan dengan topik "${globalTopic}" untuk tahap: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Deskripsikan setiap ide visual secara singkat dan jelas (1-2 kalimat per ide). Buat terstruktur dengan emoji.`;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                systemInstruction,
-            },
-        });
+        const text = await callPollinationsAI(prompt, systemInstruction);
 
-        if (response.text) {
+        if (text) {
             setSectionData(prev => ({
                 ...prev,
-                [section.id]: { ...prev[section.id], visualLoading: false, visualResult: response.text }
+                [section.id]: { ...prev[section.id], visualLoading: false, visualResult: text }
             }));
         } else {
              throw new Error("No text response");
@@ -594,14 +537,9 @@ export default function App() {
   const suggestTopicAI = async () => {
     try {
         setTopic("Menggali ide dari AI...");
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '');
-        const ai = new GoogleGenAI({ apiKey });
         const prompt = "Berikan 1 ide niche/topik channel YouTube berbahasa Indonesia yang sedang tren saat ini, tapi belum terlalu jenuh. Contoh format: 'Review Gadget Unik', 'Jelajah Kuliner Pedas'. Hanya berikan nama topiknya saja, maksimal 5-6 kata, tanpa penjelasan apa-apa.";
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-        });
-        setTopic(response.text.trim().replace(/^['"]|['"]$/g, ''));
+        const text = await callPollinationsAI(prompt);
+        setTopic(text.trim().replace(/^['"]|['"]$/g, ''));
     } catch (error) {
         setTopic("");
         showToast("Gagal mendapatkan ide topik.");
@@ -721,23 +659,15 @@ export default function App() {
     }));
 
     try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '');
-        const ai = new GoogleGenAI({ apiKey });
         const systemInstruction = "Anda adalah Ahli Algoritma YouTube kelas dunia. Berikan saran taktis, langkah nyata, draf naskah konkret yang siap digunakan. Gunakan Bahasa Indonesia yang segar, kasual, bertenaga, dan sangat aplikatif. Format langsung aksi nyatanya dalam list poin yang rapi.";
         const prompt = section.getPrompt(globalTopic, sectionDataRef.current[section.id].params);
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                systemInstruction,
-            },
-        });
+        const text = await callPollinationsAI(prompt, systemInstruction);
 
-        if (response.text) {
+        if (text) {
             setSectionData(prev => ({
                 ...prev,
-                [section.id]: { ...prev[section.id], loading: false, result: response.text }
+                [section.id]: { ...prev[section.id], loading: false, result: text }
             }));
             showToast(`Strategi Aturan ${section.id} Berhasil Diproses!`);
             return true;
@@ -748,7 +678,7 @@ export default function App() {
         console.error(error);
         setSectionData(prev => ({
             ...prev,
-            [section.id]: { ...prev[section.id], loading: false, result: "Gagal memuat strategi konten. Pastikan API key GEMINI disetel di env. Silakan cek console atau coba lagi." }
+            [section.id]: { ...prev[section.id], loading: false, result: "Gagal memuat strategi konten. Pastikan Token API Pollinations disetel di env (sebagai VITE_GEMINI_API_KEY atau VITE_POLLINATIONS_API_KEY). Silakan cek console atau coba lagi." }
         }));
         return false;
     }
@@ -796,7 +726,13 @@ export default function App() {
   }
 
   if (!userData) {
-    return <LandingPage onLoginSuccess={() => {}} />;
+    return <LandingPage onLoginSuccess={() => {
+      initAuth(
+        async (user, token) => {
+          setUserData(user);
+        }
+      );
+    }} />;
   }
 
   return (
@@ -936,25 +872,8 @@ export default function App() {
                   </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-zinc-800/50">
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <CalendarDays className="w-4 h-4 text-blue-500" />
-                  <span>Jadwal Konten:</span>
-                </div>
-                
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <select 
-                    value={selectedCalendarId}
-                    onChange={(e) => setSelectedCalendarId(e.target.value)}
-                    className="bg-zinc-950 border border-zinc-800 text-xs text-white rounded-lg p-1.5 focus:ring-1 focus:ring-blue-500 outline-none max-w-[150px] sm:max-w-xs truncate"
-                  >
-                    {calendars.length === 0 && <option value="primary">Kalender Utama</option>}
-                    {calendars.map(c => (
-                      <option key={c.id} value={c.id}>{c.summary}</option>
-                    ))}
-                  </select>
-                  <button onClick={logout} className="text-zinc-500 hover:text-red-500 text-[10px] uppercase font-bold underline">Logout</button>
-                </div>
+              <div className="flex justify-end pt-3 border-t border-zinc-800/50">
+                <button onClick={logout} className="text-zinc-500 hover:text-red-500 text-[10px] uppercase font-bold underline">Logout</button>
               </div>
           </div>
         </div>
@@ -1092,7 +1011,7 @@ export default function App() {
                                 <Sparkles className="w-5 h-5 text-yellow-500 absolute -top-1 -right-2 animate-bounce" />
                               </div>
                               <p className="text-sm text-zinc-300 font-bold tracking-wider uppercase animate-pulse text-center">
-                                Gemini AI Sedang Memikirkan Strategi...
+                                Pollinations AI Sedang Memikirkan Strategi...
                               </p>
                               <div className="flex gap-1">
                                 <span className="w-2 h-2 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
@@ -1105,11 +1024,6 @@ export default function App() {
                             <div dangerouslySetInnerHTML={{ __html: formatMarkdown(sData.result) }} />
                             <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => copyToClipboard(sData.result, section.id)} className="bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition-all border border-zinc-800">Salin</button>
-                                {userData && (
-                                    <button onClick={() => handleSyncToCalendar(section)} disabled={isSyncingCalendar[section.id]} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1 shadow-lg">
-                                        {isSyncingCalendar[section.id] ? <><BrainCircuit className="w-3 h-3 animate-spin"/> Mensinkronkan...</> : <><CalendarDays className="w-3 h-3" /> Sync Kalender</>}
-                                    </button>
-                                )}
                             </div>
                           </div>
                       ) : (

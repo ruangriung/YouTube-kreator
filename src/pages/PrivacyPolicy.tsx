@@ -21,11 +21,10 @@ export default function PrivacyPolicy() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">1. Informasi yang Kami Kumpulkan</h2>
             <p>
-              Kami mengumpulkan informasi dari Anda ketika Anda mendaftar di situs kami, masuk ke akun Anda, berpartisipasi dalam layanan kami, dan ketika Anda melakukan sinkronisasi dengan Google Calendar atau layanan lain.
+              Kami mengumpulkan informasi dari Anda ketika Anda mendaftar di situs kami, masuk ke akun Anda, dan berpartisipasi dalam layanan kami.
             </p>
             <ul className="list-disc pl-5 space-y-1 text-zinc-400">
               <li>Informasi profil Google (email, nama, foto) ketika Anda login.</li>
-              <li>Data pengaturan kalender jika Anda memberikan akses untuk mengelola kalender Anda.</li>
               <li>Data input topik dan konten YouTube Anda, yang kami gunakan untuk memfasilitasi pembuatan strategi video dengan kecerdasan buatan.</li>
             </ul>
           </section>
@@ -38,27 +37,18 @@ export default function PrivacyPolicy() {
             <ul className="list-disc pl-5 space-y-1 text-zinc-400">
               <li>Mempersonalisasi pengalaman Anda dan memenuhi kebutuhan pribadi Anda.</li>
               <li>Meningkatkan situs web kami dan fitur untuk kreator.</li>
-              <li>Mengelola kalender Anda dan membuat jadwal posting/perencanaan jika Anda meminta fitur tersebut.</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">3. Akses Kalender (Google Calendar)</h2>
-            <p>
-              Kami menggunakan dan mentransfer informasi yang diterima dari Google APIs sesuai dengan Kebijakan Data Pengguna Layanan API Google.
-              Kami HANYA membuat atau mengelola acara (events) di kalender Anda sesuai dengan instruksi otomatis dari alat kami. Kami tidak pernah melihat detail kalender pribadi Anda di luar dari apa yang esensial untuk beroperasinya aplikasi ini.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">4. Keamanan Data</h2>
+            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">3. Keamanan Data</h2>
             <p>
               Kami menerapkan berbagai langkah keamanan untuk menjaga keamanan informasi pribadi Anda. Aplikasi kami tidak menyimpan kata sandi akun Google Anda karena kami menggunakan autentikasi OAuth.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">5. Persetujuan Anda</h2>
+            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">4. Persetujuan Anda</h2>
             <p>
               Dengan menggunakan situs kami, Anda menyetujui kebijakan privasi situs web kami ini.
             </p>

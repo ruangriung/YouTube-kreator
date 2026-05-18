@@ -38,21 +38,14 @@ export default function TermsOfService() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">3. Tautan Ke Layanan Spesifik (Google API)</h2>
-            <p>
-              Layanan ini terintegrasi dengan Google API termasuk integrasi kalender dan sign-in. Saat sinkronisasi dilakukan, Anda memberi kami izin sesuai batasan OAuth yang telah disetujui. Kami tak bertanggung jawab atas kerusakan kalender, penghapusan terencana acara kalender secara manual oleh Anda, maupun sinkronisasi Google yang terhambat.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">4. Penafian Tanggung Jawab</h2>
+            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">3. Penafian Tanggung Jawab</h2>
             <p>
               Semua produk, perangkat lunak, dan layanan disediakan "sebagaimana adanya". Kami tidak bertanggung jawab atas kerugian dalam bentuk apa pun, termasuk kerugian finansial atau turunnya performa channel YouTube Anda. 
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">5. Perubahan Ketentuan</h2>
+            <h2 className="text-xl font-bold text-white uppercase impact-font tracking-wide">4. Perubahan Ketentuan</h2>
             <p>
               Kami dapat merevisi syarat penggunaan untuk situs webnya sewaktu-waktu tanpa pemberitahuan. Dengan menggunakan situs web ini, Anda setuju untuk terikat oleh versi Syarat dan Ketentuan Penggunaan saat ini.
             </p>

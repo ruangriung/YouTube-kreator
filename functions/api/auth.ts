@@ -10,10 +10,19 @@ export async function onRequest(context: any) {
       return new Response('Missing access token', { status: 400 });
     }
 
-    // Ambil info user dari Google
-    const user = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    }).then(r => r.json());
+    // Ambil info user dari Google atau bypass lokal
+    let user: any;
+    if (accessToken === 'local_dev_token') {
+      user = {
+        email: 'developer@local.dev',
+        name: 'Local Developer',
+        picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80'
+      };
+    } else {
+      user = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }).then(r => r.json());
+    }
 
     if (!user.email) {
       return new Response('Invalid token', { status: 401 });

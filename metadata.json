@@ -1,5 +1,5 @@
 {
-  "name": "CreatorBlueprint",
+  "name": "AutopilotAICommandCenter",
   "description": "Sistem autopilot berbasis AI untuk merencanakan konten YouTube, mulai dari riset niche, jadwal produksi, hingga scripting, yang terintegrasi Google Calendar.",
   "requestFramePermissions": [],
   "majorCapabilities": [

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, BrainCircuit, CalendarDays, Rocket, Play, ChevronRight, Loader2 } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2 } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { verifyAccount } from '../lib/auth';
+import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 
 export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   const login = useGoogleLogin({
-    scope: 'https://www.googleapis.com/auth/calendar.events',
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       setErrorMsg('');
@@ -40,7 +39,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <Play className="w-4 h-4 text-white fill-current" />
           </div>
           <span className="font-black text-xl tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-            CreatorBlueprint.
+            Autopilot AI Command Center.
           </span>
         </div>
         <button 
@@ -56,7 +55,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 z-10 max-w-5xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-red-400 mb-8 lowercase tracking-wide">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>didukung oleh gemini ai</span>
+          <span>didukung oleh pollinations ai</span>
         </div>
         
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
@@ -68,7 +67,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         
         <p className="text-zinc-400 text-lg md:text-xl max-w-2xl font-light mb-10 leading-relaxed">
           Ubah ide acak menjadi strategi konten taktis. Riset niche, kalender produksi, 
-          hingga skrip video—semuanya digenerate AI dan disinkronkan langsung ke Google Calendar Anda.
+          hingga skrip video—semuanya digenerate AI secara autopilot.
         </p>
 
         {errorMsg && (
@@ -93,7 +92,28 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           {loading ? 'Menghubungkan...' : 'Masuk / Daftar App'}
           {!loading && <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:text-black transition-colors" />}
         </button>
-        <p className="mt-4 text-xs text-zinc-600">Akses hanya untuk pengguna terdaftar (Cloudflare D1 Allowlist)</p>
+        <p className="mt-4 text-xs text-zinc-600 mb-4">Akses hanya untuk pengguna terdaftar (Cloudflare D1 Allowlist)</p>
+        
+        {(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))) && (
+          <button
+            onClick={async () => {
+              setLoading(true);
+              setErrorMsg('');
+              try {
+                await verifyLocalDevAccount();
+                onLoginSuccess();
+              } catch (err: any) {
+                setErrorMsg(err.message);
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-850 text-zinc-400 hover:text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-70 shadow-lg"
+          >
+            <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" />
+            Bypass & Masuk Mode Pengembang (Local)
+          </button>
+        )}
       </main>
 
       {/* Feature Section */}
@@ -109,17 +129,17 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               </div>
               <h3 className="text-xl font-bold mb-3">Riset Taktis AI</h3>
               <p className="text-zinc-400 leading-relaxed text-sm">
-                Temukan micro-niche yang belum jenuh, buat judul viral, dan bongkar psikologi audiens dengan analisis Gemini AI tingkat lanjut.
+                Temukan micro-niche yang belum jenuh, buat judul viral, dan bongkar psikologi audiens dengan analisis Pollinations AI tingkat lanjut.
               </p>
             </div>
             
             <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
               <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6">
-                <CalendarDays className="w-6 h-6 text-blue-500" />
+                <Sparkles className="w-6 h-6 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Google Calendar Sync</h3>
+              <h3 className="text-xl font-bold mb-3">Autopilot Command Center</h3>
               <p className="text-zinc-400 leading-relaxed text-sm">
-                Jadwal produksi (riset, syuting, editing) yang dibuat AI, diekstrak dan disinkronkan langsung ke kalender Google Anda dengan satu klik.
+                Jalankan seluruh modul riset dan strategi AI secara otomatis dengan satu klik untuk meluncurkan konten viral secara masif.
               </p>
             </div>
             
