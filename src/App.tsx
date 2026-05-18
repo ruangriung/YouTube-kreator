@@ -379,11 +379,13 @@ export default function App() {
         if (res.ok) {
           const list = await res.json();
           if (Array.isArray(list)) {
-            // Hanya ambil model untuk generasi teks (bukan gambar, video, musik, dsb)
-            const textModels = list.filter((m: any) => 
-              m.output_modalities?.includes('text') && 
-              !m.is_specialized
-            );
+            // Hanya ambil model untuk generasi teks (bukan gambar, video, musik, dsb) dan ambil namanya saja sebagai string
+            const textModels = list
+              .filter((m: any) => 
+                m.output_modalities?.includes('text') && 
+                !m.is_specialized
+              )
+              .map((m: any) => m.name);
             setModels(textModels);
           }
         }
