@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv, Heart } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv, Heart, Copy } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 
@@ -10,6 +10,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
   const [regUser, setRegUser] = useState<{ email: string; name: string; picture: string } | null>(null);
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regMethod, setRegMethod] = useState('');
+  const [showQRIS, setShowQRIS] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'kreator' | 'riset' | 'skrip'>('kreator');
 
   const modeContent = {
@@ -321,38 +323,126 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                   placeholder="name@email.com"
                 />
               </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Metode Pembayaran:</label>
+                <select
+                  value={regMethod}
+                  onChange={(e) => {
+                    const method = e.target.value;
+                    setRegMethod(method);
+                    if (method === 'QRIS') {
+                      setShowQRIS(true);
+                    } else {
+                      setShowQRIS(false);
+                    }
+                  }}
+                  className="w-full bg-zinc-900/80 border border-zinc-800 text-sm text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none transition-all cursor-pointer"
+                >
+                  <option value="" disabled className="bg-zinc-950">Pilih Metode Pembayaran</option>
+                  <option value="QRIS" className="bg-zinc-950">Scan QRIS (Otomatis)</option>
+                  <option value="BRI" className="bg-zinc-950">Transfer Bank BRI</option>
+                  <option value="Jago" className="bg-zinc-950">Transfer Bank Jago</option>
+                  <option value="E-Wallet" className="bg-zinc-950">E-Wallet (Gopay / Dana)</option>
+                </select>
+              </div>
             </div>
+
+            {/* Collapsible Payment Details */}
+            {regMethod && regMethod !== 'QRIS' && (
+              <div className="w-full space-y-3 mb-6">
+                {regMethod === 'BRI' && (
+                  <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Bank BRI</span>
+                      <span className="text-sm font-bold font-mono text-white mt-1">002601080458504</span>
+                      <span className="text-[9px] text-zinc-500 uppercase tracking-wider mt-0.5">a.n. Arif Tirtana</span>
+                    </div>
+                    <button 
+                      onClick={() => { 
+                        navigator.clipboard.writeText('002601080458504'); 
+                        alert('Nomor Rekening BRI berhasil disalin!'); 
+                      }} 
+                      className="p-2 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition-all active:scale-95" 
+                      title="Salin Nomor Rekening"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                )}
+                {regMethod === 'Jago' && (
+                  <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">Bank Jago</span>
+                      <span className="text-sm font-bold font-mono text-white mt-1">4889506026373948</span>
+                      <span className="text-[9px] text-zinc-500 uppercase tracking-wider mt-0.5">a.n. Arif Tirtana</span>
+                    </div>
+                    <button 
+                      onClick={() => { 
+                        navigator.clipboard.writeText('4889506026373948'); 
+                        alert('Nomor Rekening Bank Jago berhasil disalin!'); 
+                      }} 
+                      className="p-2 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition-all active:scale-95" 
+                      title="Salin Nomor Rekening"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                )}
+                {regMethod === 'E-Wallet' && (
+                  <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Gopay / Dana / ShopeePay</span>
+                      <span className="text-sm font-bold font-mono text-white mt-1">081330763633</span>
+                      <span className="text-[9px] text-zinc-500 uppercase tracking-wider mt-0.5">a.n. Arif Tirtana</span>
+                    </div>
+                    <button 
+                      onClick={() => { 
+                        navigator.clipboard.writeText('081330763633'); 
+                        alert('Nomor E-Wallet berhasil disalin!'); 
+                      }} 
+                      className="p-2 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition-all active:scale-95" 
+                      title="Salin Nomor"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* QRIS Code Box */}
-            <div className="relative group bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-2xl flex flex-col items-center mb-6 shadow-inner w-full max-w-[280px]">
-              <div className="absolute inset-0 bg-gradient-to-tr from-red-500/5 to-transparent rounded-2xl -z-10 group-hover:opacity-100 transition-opacity"></div>
-              
-              <div className="bg-white p-2.5 rounded-xl shadow-lg border border-zinc-200">
-                <img 
-                  src="/qris.png" 
-                  alt="QRIS Pembayaran 69K" 
-                  className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/200x200?text=QRIS+69K";
-                  }}
-                />
-              </div>
+            {showQRIS && (
+              <div className="relative group bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-2xl flex flex-col items-center mb-6 shadow-inner w-full max-w-[280px]">
+                <div className="absolute inset-0 bg-gradient-to-tr from-red-500/5 to-transparent rounded-2xl -z-10 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="bg-white p-2.5 rounded-xl shadow-lg border border-zinc-200">
+                  <img 
+                    src="/qris.png" 
+                    alt="QRIS Pembayaran 69K" 
+                    className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://placehold.co/200x200?text=QRIS+69K";
+                    }}
+                  />
+                </div>
 
-              <a 
-                href="/qris.png" 
-                download="QRIS_Autopilot_AI_Commander.png"
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-bold text-zinc-300 transition-all uppercase tracking-wider active:scale-95"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Unduh QRIS
-              </a>
-              
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-2.5">
-                Pindai dengan Aplikasi M-Banking / E-Wallet
-              </span>
-            </div>
+                <a 
+                  href="/qris.png" 
+                  download="QRIS_Autopilot_AI_Commander.png"
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-bold text-zinc-300 transition-all uppercase tracking-wider active:scale-95"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Unduh QRIS
+                </a>
+                
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-2.5 text-center">
+                  Pindai dengan Aplikasi M-Banking / E-Wallet
+                </span>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="w-full grid grid-cols-2 gap-3">
@@ -365,11 +455,11 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               
               <button
                 onClick={() => {
-                  const msg = `Halo Admin, saya ingin mendaftar Autopilot AI Commander dengan detail berikut:\n\n*Nama:* ${regName}\n*Email:* ${regEmail}\n*Biaya:* Rp69.000 (Lifetime)\n\nBerikut saya lampirkan bukti pembayaran QRIS saya. Tolong segera aktifkan akun saya ya, terima kasih!`;
+                  const msg = `Halo Admin, saya ingin mendaftar Autopilot AI Commander dengan detail berikut:\n\n*Nama:* ${regName}\n*Email:* ${regEmail}\n*Metode:* ${regMethod}\n*Biaya:* Rp69.000 (Lifetime)\n\n*Berikut saya lampirkan bukti pembayaran pada chat ini.*`;
                   const encodedMsg = encodeURIComponent(msg);
-                  window.open(`https://wa.me/6281234567890?text=${encodedMsg}`, '_blank');
+                  window.open(`https://wa.me/6281330763633?text=${encodedMsg}`, '_blank');
                 }}
-                disabled={!regName || !regEmail}
+                disabled={!regName || !regEmail || !regMethod}
                 className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-lg shadow-red-600/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
               >
                 Konfirmasi WA
