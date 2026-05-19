@@ -1173,7 +1173,7 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                   <button onClick={suggestTopicAI} disabled={topic === 'Menggali ide dari AI...'} className="bg-zinc-800 hover:bg-zinc-700 text-yellow-500/90 font-bold text-xs px-4 py-3 rounded-xl transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2">
-                    {topic === 'Menggali ide dari AI...' ? <Loader2 className="w-4 h-4 animate-spin text-yellow-500" /> : <Lightbulb className="w-4 h-4" />}
+                    {topic === 'Menggali ide dari AI...' ? <Loader2 className="w-4 h-4 animate-spin text-yellow-500" /> : <Sparkles className="w-4 h-4" />}
                     <span className="hidden sm:inline">Temukan Ide Niche</span>
                   </button>
                   <input 
