@@ -1198,7 +1198,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
 
       {/* Admin Panel Modal Overlay */}
       {isAdminOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-all duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 transition-all duration-300">
           <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-zinc-800/80 flex justify-between items-center bg-zinc-900/50">
               <div className="flex items-center gap-2">
@@ -1227,7 +1227,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
         </div>
       )}
 
-      <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl transition-transform duration-300 overflow-hidden ${isModalOpen ? 'scale-100' : 'scale-95'}`}>
           <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-950">
             <div className="flex items-center gap-2 text-red-500">
