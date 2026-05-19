@@ -286,7 +286,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       {/* Modal Pendaftaran QRIS */}
       {regUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
-          <div className="relative w-full max-w-lg bg-zinc-950/90 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_-5px_rgba(239,68,68,0.15)] flex flex-col items-center">
+          <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-zinc-950/90 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_-5px_rgba(239,68,68,0.15)] flex flex-col items-center [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full">
             {/* Header */}
             <div className="w-12 h-12 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center mb-4">
               <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
