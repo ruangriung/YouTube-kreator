@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv, Heart, Copy } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv, Heart, Copy, Eye, Download, Calendar, Layers, Shield } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 
@@ -11,6 +11,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regMethod, setRegMethod] = useState('');
+  const [regPlan, setRegPlan] = useState<'lifetime' | 'daily' | 'monthly' | 'yearly'>('lifetime');
   const [showQRIS, setShowQRIS] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'kreator' | 'riset' | 'skrip'>('kreator');
 
@@ -199,117 +200,159 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       <section className="border-t border-zinc-900 bg-zinc-950/90 z-10">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="text-center mb-16">
-             <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">6 Benefit Utama Autopilot AI</h2>
+             <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">6 Fitur & Benefit Utama Dashboard</h2>
              <p className="text-zinc-500 text-sm md:text-base max-w-xl mx-auto font-light leading-relaxed">
-               Dapatkan seluruh alur kerja profesional kreator konten YouTube kelas dunia yang digenerate otomatis dalam satu dashboard terintegrasi.
+               Semua alat tempur taktis kreator profesional kini menyatu dalam satu sistem terintegrasi. Tidak perlu berlangganan 5 tool terpisah lagi.
              </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-red-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <BrainCircuit className="w-6 h-6 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">1. Riset Mikro-Niche Taktis</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">1. Riset Niche & Mikro-Niche</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Temukan target audiens ideal dan sub-niche tersegmentasi yang konsisten agar terhindar dari burnout dan mempercepat monetisasi.
+                Temukan target audiens ideal, sub-niche tersegmentasi, serta ribuan ide konten kreatif yang orisinal disesuaikan dengan niche channel YouTube Anda.
               </p>
             </div>
             
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6">
-                <Sparkles className="w-6 h-6 text-blue-500" />
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-purple-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Layers className="w-6 h-6 text-purple-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">2. Analisis Konten Pesaing Viral</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">2. Bedah Video Kompetitor AI</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Bongkar psikologi audiens, bedah 50 pola video viral di niche Anda, dan pelajari emosi pemicu interaksi komentar yang tinggi.
+                Tarik transkrip video pesaing secara instan dari URL YouTube dan jalankan audit retensi AI untuk membongkar taktik hook mereka (laporan dapat diunduh sebagai file .md).
               </p>
             </div>
             
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6">
-                <Rocket className="w-6 h-6 text-green-500" />
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-blue-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Target className="w-6 h-6 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">3. Formula Hooks Adiktif</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">3. Title & CTR A/B Test Simulator</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Miliki formula teks kalimat pancingan (hooks) 3 detik pertama dengan intonasi vokal dramatis agar penonton tidak skip video Anda.
+                Uji dan simulasikan tampilan visual judul dan thumbnail Anda di feed HP & Desktop sebelum upload, lengkap dengan analisis psikologis emosi penonton.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6">
-                <Target className="w-6 h-6 text-amber-500" />
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-amber-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Tv className="w-6 h-6 text-amber-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">4. Storyboard Visual Canggih</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">4. AI Image & Video B-Roll Creator</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Rancang storyboard visual detik-demi-detik lengkap dengan montase B-roll, transisi musik latar, pergerakan kamera, dan SFX.
+                Generate gambar thumbnail premium dan klip video B-Roll asinkron berdurasi hingga 8 detik dengan pilihan rasio media (Portrait, Landscape, Square) dan download instan.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6">
-                <Tv className="w-6 h-6 text-purple-500" />
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-emerald-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-6 h-6 text-emerald-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">5. Draf Skrip Video Siap Pakai</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">5. Suggest AI & Auto-Translation</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Hasilkan naskah video utuh siap baca dengan pilihan gaya bahasa yang dinamis, intonasi berbicara, hingga petunjuk visual lengkap.
+                Dapatkan 3 ide prompt visual otomatis berbasis AI yang relevan dengan topik channel Anda, lengkap dengan auto-translation ke Bahasa Inggris untuk hasil visual maksimal.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
-              <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
-                <Heart className="w-6 h-6 text-red-500" />
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-pink-500/20 transition-all hover:bg-zinc-900/60 group">
+              <div className="w-12 h-12 bg-pink-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Eye className="w-6 h-6 text-pink-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">6. Desain Thumbnail CTR Tinggi</h3>
+              <h3 className="text-lg font-extrabold mb-3 text-white">6. Bedah Visual & Thumbnail CTR</h3>
               <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
-                Strategi menyusun tata letak warna kontras, ekspresi karakter penarik klik, dan pesan tulisan pendek pemicu rasa penasaran.
+                Unggah thumbnail Anda untuk di-scan AI Vision. Bongkar kontras warna, keterbacaan teks, ekspresi karakter, estimasi skor CTR, beserta unduh laporan .md offline.
               </p>
             </div>
           </div>
 
-          <div className="mt-14 text-center">
-            <h3 className="text-3xl font-black tracking-tight mb-6">Pilih Paket Langganan yang Tepat untuk Kreator Anda</h3>
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-red-500/40 transition-all">
-                <span className="text-xs uppercase tracking-[.3em] text-zinc-500">Starter</span>
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">Rp59.000</span>
-                  <span className="text-xs text-zinc-500">/bulan</span>
+          <div className="mt-20 text-center">
+            <h3 className="text-3xl font-black tracking-tight mb-4">Pilihan Paket Langganan Fleksibel</h3>
+            <p className="text-zinc-500 text-sm max-w-xl mx-auto font-light leading-relaxed mb-10">
+              Sesuaikan anggaran dan durasi kebutuhan produksi Anda dengan opsi berlangganan yang transparan dan bersahabat bagi kreator mandiri maupun tim.
+            </p>
+            
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {/* Daily Pass */}
+              <div className="p-6 rounded-3xl bg-zinc-950/80 border border-zinc-850 hover:border-red-500/30 transition-all flex flex-col justify-between text-left group">
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-[9px] uppercase tracking-widest font-black text-red-500 bg-red-950/50 px-2.5 py-1 rounded-lg">Daily Pass</span>
+                    <Calendar className="w-4 h-4 text-zinc-500" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-2">
+                    <span className="text-3xl font-black text-white">Rp9.000</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">/hari</span>
+                  </div>
+                  <p className="text-zinc-400 mt-3 text-xs leading-relaxed">
+                    Sangat cocok untuk riset kilat, bedah thumbnail kompetitor darurat, atau produksi klip video B-Roll secara instan selama 24 jam penuh.
+                  </p>
                 </div>
-                <p className="text-zinc-400 mt-3 text-sm">Akses dasar AI untuk riset niche, ide hook, dan dashboard konten ringan.</p>
-                <ul className="mt-6 space-y-3 text-sm text-zinc-400">
-                  <li>Analisis ide 3x per minggu</li>
-                  <li>Ide thumbnail + hook</li>
-                  <li>Preferensi gaya visual</li>
-                </ul>
-                <button className="mt-6 w-full bg-white text-black font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Starter</button>
+                <div className="mt-6 pt-4 border-t border-zinc-900">
+                  <button onClick={() => login()} className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Pilih Harian</button>
+                </div>
               </div>
-              <div className="p-8 rounded-3xl bg-gradient-to-br from-red-600/90 to-red-700/90 border border-red-500/50 shadow-lg shadow-red-500/10 text-white">
-                <span className="text-xs uppercase tracking-[.3em] text-red-100">Pro</span>
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-black">Rp149.000</span>
-                  <span className="text-xs text-red-200">/bulan</span>
+
+              {/* Monthly Pro */}
+              <div className="p-6 rounded-3xl bg-zinc-950/80 border border-zinc-850 hover:border-purple-500/30 transition-all flex flex-col justify-between text-left group">
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-[9px] uppercase tracking-widest font-black text-purple-500 bg-purple-950/50 px-2.5 py-1 rounded-lg">Monthly Pro</span>
+                    <Layers className="w-4 h-4 text-zinc-500" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-2">
+                    <span className="text-3xl font-black text-white">Rp49.000</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">/bulan</span>
+                  </div>
+                  <p className="text-zinc-400 mt-3 text-xs leading-relaxed">
+                    Paket paling populer untuk kreator aktif yang rutin merilis video setiap minggu. Akses seluruh generator media AI, model video asinkron, dan riset.
+                  </p>
                 </div>
-                <p className="mt-3 text-sm text-red-100">Semua fitur Starter plus dashboard Autopilot, generator gambar AI, dan riset konten lengkap.</p>
-                <ul className="mt-6 space-y-3 text-sm text-red-100">
-                  <li>10 aturan sukses + autopilot</li>
-                  <li>Generator gambar AI</li>
-                  <li>Strategi thumbnail & skrip lanjutan</li>
-                </ul>
-                <button className="mt-6 w-full bg-white text-red-700 font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Pro</button>
+                <div className="mt-6 pt-4 border-t border-zinc-900">
+                  <button onClick={() => login()} className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Pilih Bulanan</button>
+                </div>
               </div>
-              <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-emerald-500/40 transition-all">
-                <span className="text-xs uppercase tracking-[.3em] text-zinc-500">Lifetime</span>
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">Rp599.000</span>
-                  <span className="text-xs text-zinc-500">Sekali bayar</span>
+
+              {/* Yearly Master */}
+              <div className="p-6 rounded-3xl bg-zinc-950/80 border border-zinc-850 hover:border-blue-500/30 transition-all flex flex-col justify-between text-left group">
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-[9px] uppercase tracking-widest font-black text-blue-500 bg-blue-950/50 px-2.5 py-1 rounded-lg">Yearly Master</span>
+                    <Shield className="w-4 h-4 text-zinc-500" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-2">
+                    <span className="text-3xl font-black text-white">Rp299.000</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">/tahun</span>
+                  </div>
+                  <p className="text-zinc-400 mt-3 text-xs leading-relaxed">
+                    Hemat 50% dibandingkan bulanan. Ideal untuk tim editor, agensi media sosial, studio kreatif, atau YouTuber profesional berskala besar.
+                  </p>
                 </div>
-                <p className="text-zinc-400 mt-3 text-sm">Akses penuh seumur hidup untuk seluruh alur kerja kreator, update fitur, dan dukungan prioritas.</p>
-                <ul className="mt-6 space-y-3 text-sm text-zinc-400">
-                  <li>Akses permanen tanpa batas</li>
-                  <li>Update fitur otomatis</li>
-                  <li>Support prioritas</li>
-                </ul>
-                <button className="mt-6 w-full bg-white text-black font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Lifetime</button>
+                <div className="mt-6 pt-4 border-t border-zinc-900">
+                  <button onClick={() => login()} className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Pilih Tahunan</button>
+                </div>
+              </div>
+
+              {/* Lifetime Access */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-red-950/30 to-red-900/10 border border-red-500/30 shadow-lg shadow-red-500/5 transition-all flex flex-col justify-between text-left group relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-red-600 text-white font-black text-[8px] uppercase tracking-widest py-1 px-4 rotate-45 translate-x-3 translate-y-2">Special</div>
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-[9px] uppercase tracking-widest font-black text-red-400 bg-red-950/60 px-2.5 py-1 rounded-lg">Lifetime Hub</span>
+                    <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-2">
+                    <span className="text-3xl font-black text-white">Rp599.000</span>
+                    <span className="text-[10px] text-red-400 font-bold">Sekali Bayar</span>
+                  </div>
+                  <p className="text-zinc-300 mt-3 text-xs leading-relaxed">
+                    Akses penuh abadi selamanya. Sekali bayar untuk seluruh 10+ modul visual, transkrip video kompetitor, generator klip video, dan update fitur gratis selamanya.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-red-900/40">
+                  <button onClick={() => login()} className="w-full bg-red-650 hover:bg-red-650 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md shadow-red-500/10">Beli Lifetime</button>
+                </div>
               </div>
             </div>
           </div>
@@ -345,7 +388,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             </h3>
             
             <p className="text-xs sm:text-sm text-zinc-400 text-center font-light mb-6 leading-relaxed max-w-md">
-              Email Google Anda belum terdaftar di sistem kami. Dapatkan akses <span className="text-red-400 font-bold">Lifetime</span> ke seluruh 10+ alat AI taktis, riset mikro-niche, draf skrip, dan mode autopilot seharga <span className="text-white font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">Rp 69.000</span> sekali bayar.
+              Email Google Anda belum terdaftar di sistem kami. Pilih paket langganan Anda di bawah untuk mendapatkan akses penuh ke seluruh 10+ alat AI taktis, riset mikro-niche, bedah kompetitor, generator klip video, dan mode autopilot.
             </p>
 
             {/* Form */}
@@ -373,6 +416,20 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               </div>
 
               <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Pilih Paket Langganan:</label>
+                <select
+                  value={regPlan}
+                  onChange={(e) => setRegPlan(e.target.value as any)}
+                  className="w-full bg-zinc-900/80 border border-zinc-800 text-sm text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none transition-all cursor-pointer"
+                >
+                  <option value="daily" className="bg-zinc-950">Daily Pass (Rp 9.000 / hari)</option>
+                  <option value="monthly" className="bg-zinc-950">Monthly Pro (Rp 49.000 / bulan)</option>
+                  <option value="yearly" className="bg-zinc-950">Yearly Master (Rp 299.000 / tahun)</option>
+                  <option value="lifetime" className="bg-zinc-950">Lifetime Access (Rp 599.000 sekali bayar)</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Metode Pembayaran:</label>
                 <select
                   value={regMethod}
@@ -393,6 +450,28 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                   <option value="Jago" className="bg-zinc-950">Transfer Bank Jago</option>
                   <option value="E-Wallet" className="bg-zinc-950">E-Wallet (Gopay / Dana)</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Ringkasan Biaya */}
+            <div className="w-full bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-2xl mb-6 text-left flex justify-between items-center">
+              <div>
+                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block">Paket Pilihan</span>
+                <span className="text-xs font-bold text-white uppercase mt-0.5 block">
+                  {regPlan === 'lifetime' && 'Lifetime Access'}
+                  {regPlan === 'daily' && 'Daily Pass'}
+                  {regPlan === 'monthly' && 'Monthly Pro'}
+                  {regPlan === 'yearly' && 'Yearly Master'}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block">Total Tagihan</span>
+                <span className="text-sm font-black text-red-500 block mt-0.5">
+                  {regPlan === 'lifetime' && 'Rp 599.000'}
+                  {regPlan === 'daily' && 'Rp 9.000'}
+                  {regPlan === 'monthly' && 'Rp 49.000'}
+                  {regPlan === 'yearly' && 'Rp 299.000'}
+                </span>
               </div>
             </div>
 
@@ -467,10 +546,10 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                 <div className="bg-white p-2.5 rounded-xl shadow-lg border border-zinc-200">
                   <img 
                     src="/qris.png" 
-                    alt="QRIS Pembayaran 69K" 
+                    alt="QRIS Pembayaran" 
                     className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded"
                     onError={(e) => {
-                      e.currentTarget.src = "https://placehold.co/200x200?text=QRIS+69K";
+                      e.currentTarget.src = "https://placehold.co/200x200?text=Scan+QRIS";
                     }}
                   />
                 </div>
@@ -503,7 +582,14 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               
               <button
                 onClick={() => {
-                  const msg = `Halo Admin, saya ingin mendaftar Autopilot AI Commander dengan detail berikut:\n\n*Nama:* ${regName}\n*Email:* ${regEmail}\n*Metode:* ${regMethod}\n*Biaya:* Rp69.000 (Lifetime)\n\n*Berikut saya lampirkan bukti pembayaran pada chat ini.*`;
+                  const planNames = {
+                    lifetime: 'Lifetime Access (Rp 599.000)',
+                    daily: 'Daily Pass (Rp 9.000)',
+                    monthly: 'Monthly Pro (Rp 49.000)',
+                    yearly: 'Yearly Master (Rp 299.000)'
+                  };
+                  const selectedPlanName = planNames[regPlan];
+                  const msg = `Halo Admin, saya ingin mendaftar Autopilot AI Commander dengan detail berikut:\n\n*Nama:* ${regName}\n*Email:* ${regEmail}\n*Paket Pilihan:* ${selectedPlanName}\n*Metode Pembayaran:* ${regMethod}\n\n*Berikut saya lampirkan bukti transfer/pembayaran pada chat ini.*`;
                   const encodedMsg = encodeURIComponent(msg);
                   window.open(`https://wa.me/6281330763633?text=${encodedMsg}`, '_blank');
                 }}

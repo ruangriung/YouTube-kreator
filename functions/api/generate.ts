@@ -54,7 +54,7 @@ export async function onRequest(context: any) {
 
   // 3. Parse input params for AI call
   try {
-    const { prompt, systemInstruction, model = 'openai', type = 'text' } = await request.json();
+    const { prompt, systemInstruction, model = 'openai', type = 'text', width, height, duration, aspectRatio, audio } = await request.json();
     if (!prompt) {
       return new Response('Missing prompt', { status: 400 });
     }
@@ -65,7 +65,9 @@ export async function onRequest(context: any) {
 
     if (type === 'image') {
       const encodedPrompt = encodeURIComponent(prompt);
-      const imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      let imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      if (width) imageUrl += `&width=${width}`;
+      if (height) imageUrl += `&height=${height}`;
       const aiResponse = await fetch(imageUrl, {
         method: 'GET',
         headers: {
@@ -85,11 +87,51 @@ export async function onRequest(context: any) {
       const buffer = await aiResponse.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       let binary = '';
-      for (let i = 0; i < bytes.length; i += 1) {
-        binary += String.fromCharCode(bytes[i]);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i += 8192) {
+        // Use subarray to safely process chunks of 8192 bytes
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
       }
       const base64 = btoa(binary);
       return new Response(JSON.stringify({ imageBase64: `data:${contentType};base64,${base64}` }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (type === 'video') {
+      const encodedPrompt = encodeURIComponent(prompt);
+      let videoUrl = `https://gen.pollinations.ai/video/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      if (width) videoUrl += `&width=${width}`;
+      if (height) videoUrl += `&height=${height}`;
+      if (duration) videoUrl += `&duration=${duration}`;
+      if (aspectRatio) videoUrl += `&aspectRatio=${aspectRatio}`;
+      if (audio !== undefined) videoUrl += `&audio=${audio}`;
+
+      const aiResponse = await fetch(videoUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${cleanApiKey}`
+        }
+      });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.text().catch(() => '');
+        return new Response(
+          JSON.stringify({ error: errorData || `Video API Error: ${aiResponse.status}` }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = aiResponse.headers.get('Content-Type') || 'video/mp4';
+      const buffer = await aiResponse.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i += 8192) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      }
+      const base64 = btoa(binary);
+      return new Response(JSON.stringify({ videoBase64: `data:${contentType};base64,${base64}` }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }

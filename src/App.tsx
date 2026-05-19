@@ -1,10 +1,146 @@
 import React, { useState, useEffect } from 'react';
-import { callPollinationsAI, callPollinationsImage } from './lib/pollinations';
+import { callPollinationsAI, callPollinationsImage, callPollinationsVideo } from './lib/pollinations';
 import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CheckCircle2, Download, Loader2, Cpu, ChevronDown, LogOut, ShieldAlert, Play } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Cell } from 'recharts';
 import { initAuth, getAccessToken, logout } from './lib/auth';
 import LandingPage from './components/LandingPage';
 import AdminPanel from './components/AdminPanel';
+import TitleSimulator from './components/TitleSimulator';
+import ImageGenerator from './components/ImageGenerator';
+import CompetitorAnalyzer from './components/CompetitorAnalyzer';
+import VisualDissector from './components/VisualDissector';
+
+// Helper component for Section 6 visual CTR preview
+const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams: any }) => {
+  const [loading, setLoading] = useState(false);
+  const [generatedImg, setGeneratedImg] = useState<string | null>(null);
+  const [showLayoutOverlay, setShowLayoutOverlay] = useState(true);
+
+  const getCuratedMockImage = () => {
+    if (params.warna?.includes("Kuning")) {
+      return "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop";
+    } else if (params.warna?.includes("Merah")) {
+      return "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&auto=format&fit=crop";
+    } else {
+      return "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=600&auto=format&fit=crop";
+    }
+  };
+
+  const handleGenerateVisual = async () => {
+    setLoading(true);
+    try {
+      const prompt = `A premium cinematic high-CTR YouTube thumbnail style design. Dark atmospheric background with bold glowing neon colors: ${params.warna}. Subject: ${params.karakter}. Clean composition, intense expression, high contrast lighting, award-winning gaming/tech YouTube thumbnail aesthetic.`;
+      const url = await callPollinationsImage(prompt, 'flux', 1024, 576);
+      if (url) {
+        setGeneratedImg(url);
+      }
+    } catch (err) {
+      console.error("Gagal men-generate gambar draf:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentImg = generatedImg || getCuratedMockImage();
+
+  return (
+    <div className="mt-4 border-t border-zinc-800/85 pt-4 space-y-4 text-left">
+      <div className="flex justify-between items-center">
+        <span className="text-[10px] font-black uppercase text-pink-500 tracking-widest flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
+          Simulasi Visual & Layout Grid AI
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowLayoutOverlay(!showLayoutOverlay)}
+          className={`px-2.5 py-1 text-[9px] font-extrabold uppercase rounded-lg border transition-all ${
+            showLayoutOverlay 
+              ? 'bg-zinc-800 text-white border-zinc-700' 
+              : 'bg-zinc-950 text-zinc-505 border-zinc-900 hover:text-zinc-400'
+          }`}
+        >
+          {showLayoutOverlay ? 'Sembunyikan Grid CTR' : 'Tampilkan Grid CTR'}
+        </button>
+      </div>
+
+      <div className="grid md:grid-cols-12 gap-4">
+        {/* Visual Preview Panel */}
+        <div className="md:col-span-7 relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 group min-h-[160px] flex items-center justify-center">
+          <img 
+            src={currentImg} 
+            alt="AI Thumbnail Preview" 
+            className="w-full h-full object-cover max-h-[220px] transition-transform duration-500 group-hover:scale-105" 
+          />
+
+          {/* Rule of Thirds / Focal Layout Grid Overlay */}
+          {showLayoutOverlay && (
+            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-10">
+              <div className="border-r border-b border-white/20"></div>
+              <div className="border-r border-b border-white/20"></div>
+              <div className="border-b border-white/20"></div>
+              
+              <div className="border-r border-b border-white/20"></div>
+              <div className="border-r border-b border-white/20"></div>
+              <div className="border-b border-white/20"></div>
+              
+              <div className="border-r border-white/20"></div>
+              <div className="border-r border-white/20"></div>
+              <div></div>
+
+              <div className="absolute top-2 left-2 bg-black/60 border border-zinc-800 text-[8px] font-black text-zinc-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                Zona Judul
+              </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600/80 border border-red-500 text-[8px] font-black text-white px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                Titik Fokus Utama
+              </div>
+              <div className="absolute bottom-2 right-2 bg-zinc-950/80 border border-zinc-800 text-[8px] font-black text-yellow-500 px-1.5 py-0.5 rounded">
+                10:14
+              </div>
+            </div>
+          )}
+
+          {loading && (
+            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-2 z-20">
+              <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-[10px] font-black text-pink-400 uppercase tracking-widest animate-pulse">Generasi Desain AI...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Action Panel */}
+        <div className="md:col-span-5 flex flex-col justify-between space-y-3">
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">Rekomendasi Struktur Tata Letak:</span>
+            
+            <div className="bg-zinc-950/80 border border-zinc-850 p-3 rounded-xl space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                <span className="text-[9px] font-bold text-zinc-300">Warna: {params.warna ? params.warna.split(' ')[0] : 'Kontras'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                <span className="text-[9px] font-bold text-zinc-300">Fokus: {params.karakter ? params.karakter.split(' ')[0] : 'Karakter'}</span>
+              </div>
+              <p className="text-[10px] text-zinc-400 font-light leading-relaxed pt-1">
+                Letakkan subjek utama di sepertiga kanan (sesuai grid) dan overlay teks pemicu di sepertiga kiri untuk keterbacaan yang optimal.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGenerateVisual}
+            disabled={loading}
+            className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-pink-500/10 active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <Sparkles size={13} className="shrink-0" />
+            Generate Draf Visual AI Baru
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SECTIONS = [
   {
@@ -159,23 +295,27 @@ const SECTIONS = [
     category: 'Visual & Thumbnail',
     defaultParams: { warna: 'Kuning Stabilo & Hitam Pekat (Sangat Kontras)', karakter: 'Ekspresi Terkejut dengan Mulut Terbuka' },
     renderInputs: (params, setParams) => (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
-        <div>
-          <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Palet Warna Utama:</label>
-          <select value={params.warna} onChange={e => setParams({...params, warna: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
-            <option value="Kuning Stabilo & Hitam Pekat (Sangat Kontras)">Kuning Stabilo & Hitam Kontras</option>
-            <option value="Merah YouTube & Abu-Abu Industri">Merah & Abu-Abu Industri</option>
-            <option value="Biru Toska Neon & Ungu Violet">Biru Neon & Ungu Violet</option>
-          </select>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+          <div>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Palet Warna Utama:</label>
+            <select value={params.warna} onChange={e => setParams({...params, warna: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
+              <option value="Kuning Stabilo & Hitam Pekat (Sangat Kontras)">Kuning Stabilo & Hitam Kontras</option>
+              <option value="Merah YouTube & Abu-Abu Industri">Merah & Abu-Abu Industri</option>
+              <option value="Biru Toska Neon & Ungu Violet">Biru Neon & Ungu Violet</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Fokus Karakter/Emosi:</label>
+            <select value={params.karakter} onChange={e => setParams({...params, karakter: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
+              <option value="Ekspresi Terkejut dengan Mulut Terbuka">Ekspresi Terkejut / Syok</option>
+              <option value="Wajah Menunjuk Objek Misterius dengan Tatapan Tajam">Menunjuk Objek Misterius</option>
+              <option value="Tanpa Wajah, Fokus ke Produk/Grafik yang Menggunung">Hanya Fokus Objek / Perubahan Grafis</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Fokus Karakter/Emosi:</label>
-          <select value={params.karakter} onChange={e => setParams({...params, karakter: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
-            <option value="Ekspresi Terkejut dengan Mulut Terbuka">Ekspresi Terkejut / Syok</option>
-            <option value="Wajah Menunjuk Objek Misterius dengan Tatapan Tajam">Menunjuk Objek Misterius</option>
-            <option value="Tanpa Wajah, Fokus ke Produk/Grafik yang Menggunung">Hanya Fokus Objek / Perubahan Grafis</option>
-          </select>
-        </div>
+        {/* Real-time interactive AI Image Layout Previewer inside Card 6 */}
+        <ThumbnailPreviewSection params={params} setParams={setParams} />
       </div>
     ),
     getPrompt: (topic, params) => `Buat panduan konsep visual kreatif untuk draf Thumbnail video bertema "${topic}". Skema warna kontras: "${params.warna}", ekspresi karakter: "${params.karakter}". WAJIB SERTAKAN CONTOH MOCKUP TEKS (maksimal 3 kata pemicu), ide objek di latar belakang, dan spesifikasi efek cahaya. Jadikan ini seolah sketch nyata untuk desainer grafis.`
@@ -385,6 +525,21 @@ export default function App() {
   const [imageResult, setImageResult] = useState<string | null>(null);
   const [imageError, setImageError] = useState('');
 
+  // States for Bedah Video Kompetitor
+  const [competitorUrl, setCompetitorUrl] = useState('');
+  const [analyzingCompetitor, setAnalyzingCompetitor] = useState(false);
+  const [competitorTranscript, setCompetitorTranscript] = useState<string | null>(null);
+  const [competitorAnalysis, setCompetitorAnalysis] = useState<string | null>(null);
+  const [competitorError, setCompetitorError] = useState<string | null>(null);
+
+  const [imageModels, setImageModels] = useState<string[]>(['flux']);
+
+  // States for Bedah Visual & Thumbnail
+  const [dissectImage, setDissectImage] = useState<string | null>(null);
+  const [dissecting, setDissecting] = useState(false);
+  const [dissectResult, setDissectResult] = useState<string | null>(null);
+  const [dissectError, setDissectError] = useState<string | null>(null);
+
   useEffect(() => {
     localStorage.setItem('ytBuilder_outputLanguage', outputLanguage);
   }, [outputLanguage]);
@@ -438,6 +593,26 @@ export default function App() {
       }
     };
     fetchModels();
+
+    const fetchImageModels = async () => {
+      try {
+        const res = await fetch('https://gen.pollinations.ai/image/models');
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            const imgModels = list
+              .filter((m: any) => m.output_modalities?.includes('image'))
+              .map((m: any) => m.name);
+            if (imgModels.length > 0) {
+              setImageModels(imgModels);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Gagal memuat list model gambar:", err);
+      }
+    };
+    fetchImageModels();
 
     initAuth(
       async (user, token) => {
@@ -639,26 +814,6 @@ PENTING: Berikan ide niche/topik yang sangat unik, tidak biasa, jarang terpikirk
     }
   };
 
-  const generateImage = async () => {
-    if (!imagePrompt.trim()) {
-      setImageError('Silakan isi prompt gambar terlebih dahulu.');
-      return;
-    }
-    setImageLoading(true);
-    setImageError('');
-    setImageResult(null);
-
-    try {
-      const imageData = await callPollinationsImage(imagePrompt, imageModel);
-      setImageResult(imageData);
-    } catch (err: any) {
-      console.error(err);
-      setImageError(err.message || 'Gagal membuat gambar. Coba lagi.');
-    } finally {
-      setImageLoading(false);
-    }
-  };
-
   const showToast = (message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
@@ -803,59 +958,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
     }
   };
 
-  const runCTRABTest = async () => {
-    if (!titleA.trim() || !titleB.trim()) {
-      showToast("Silakan isi kedua kandidat judul terlebih dahulu!");
-      return;
-    }
-    setSimulatingCTR(true);
-    setCtrResult(null);
-    try {
-      const systemInstruction = "Anda adalah Ahli Psikologi Kognitif dan Pengoptimal CTR YouTube kelas dunia. Analisis dan berikan respons dalam format JSON bersih sesuai instruksi. Jangan berikan kata pengantar atau penutup apa pun, hanya JSON mentah yang valid.";
-      const prompt = `Analisis 2 judul video YouTube untuk topik "${globalTopic || 'Umum'}":
-Judul A: "${titleA}"
-Judul B: "${titleB}"
 
-Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengantar atau penutup apa pun:
-{
-  "scoreA": 75,
-  "ctrA": "4.8% - 6.5%",
-  "triggersA": ["Curiosity Gap", "Negativity Bias"],
-  "verdictA": "Sangat memicu rasa penasaran namun sedikit kurang menjelaskan nilai manfaat bagi penonton.",
-  "scoreB": 85,
-  "ctrB": "6.8% - 8.5%",
-  "triggersB": ["FOMO", "Value Benefit"],
-  "verdictB": "Menjelaskan manfaat dengan jelas dan menciptakan urgensi waktu yang mendesak.",
-  "winner": "B",
-  "reason": "Judul B lebih efektif karena menyentuh masalah nyata penonton dan memberikan solusi cepat.",
-  "titleC": "Judul Alternatif Terbaik Gabungan Keduanya"
-}`;
-      const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
-      
-      const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(jsonString);
-      setCtrResult(parsed);
-      showToast("Analisis A/B Judul Selesai!");
-    } catch (err) {
-      console.error(err);
-      setCtrResult({
-        scoreA: 72,
-        ctrA: "5.2% - 7.0%",
-        triggersA: ["Curiosity Gap"],
-        verdictA: "Kandidat A memicu rasa penasaran awal yang baik tapi kurang urgensi.",
-        scoreB: 80,
-        ctrB: "6.5% - 8.2%",
-        triggersB: ["Direct Benefit"],
-        verdictB: "Kandidat B memberikan kejelasan manfaat, namun terasa sedikit kurang emosional.",
-        winner: "B",
-        reason: "Secara psikologis, audiens menyukai manfaat langsung yang terukur daripada teka-teki.",
-        titleC: `${titleB} (CTR Boosted)`
-      });
-      showToast("Analisis A/B Judul diproses menggunakan Intelligent Fallback.");
-    } finally {
-      setSimulatingCTR(false);
-    }
-  };
 
   const completedCount = Object.values(checkedSteps).filter(Boolean).length;
   const progressPercentage = (completedCount / 10) * 100;
@@ -871,6 +974,20 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
       return prev;
     });
   }, [completedCount]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.model-dropdown-container')) {
+        setIsModelDropdownOpen(false);
+      }
+      if (!target.closest('.user-dropdown-container')) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   const barChartData = [
     { name: 'Total Langkah', Selesai: completedCount, Sisa: 10 - completedCount }
@@ -926,7 +1043,7 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
         {/* Right: Dynamic Model Selector & User Dropdown */}
         <div className="flex items-center gap-4">
           {/* Dynamic Model Dropdown */}
-          <div className="relative">
+          <div className="relative model-dropdown-container">
             <button
               onClick={() => {
                 setIsModelDropdownOpen(!isModelDropdownOpen);
@@ -987,7 +1104,7 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
           </div>
 
           {/* User Avatar + Dropdown */}
-          <div className="relative">
+          <div className="relative user-dropdown-container">
             <button
               onClick={() => {
                 setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -1352,267 +1469,40 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
         </div>
 
         {/* YouTube Title & CTR A/B Test Simulator Card */}
-        <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-zinc-800/80 pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="bg-red-500/10 border border-red-500/25 p-2 rounded-xl text-red-500 shrink-0">
-                <BrainCircuit className="w-5 h-5 animate-pulse" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Title & CTR A/B Simulator</h3>
-                <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Uji performa dan dapatkan rekomendasi psikologis pemicu klik judul video Anda secara real-time.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left: Input Fields & Preview Switcher */}
-            <div className="space-y-4 text-left">
-              <div>
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Kandidat Judul A:</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={titleA}
-                    onChange={(e) => setTitleA(e.target.value)}
-                    placeholder="Masukkan kandidat judul pertama..."
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-red-500 text-xs sm:text-sm text-white rounded-xl px-3.5 py-2.5 outline-none transition-all"
-                  />
-                  <button
-                    onClick={() => setActivePreview('A')}
-                    className={`px-3 rounded-xl border text-[10px] font-bold transition-all ${activePreview === 'A' ? 'bg-red-600 border-red-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white'}`}
-                  >
-                    Pratinjau
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Kandidat Judul B:</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={titleB}
-                    onChange={(e) => setTitleB(e.target.value)}
-                    placeholder="Masukkan kandidat judul kedua..."
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-red-500 text-xs sm:text-sm text-white rounded-xl px-3.5 py-2.5 outline-none transition-all"
-                  />
-                  <button
-                    onClick={() => setActivePreview('B')}
-                    className={`px-3 rounded-xl border text-[10px] font-bold transition-all ${activePreview === 'B' ? 'bg-red-600 border-red-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white'}`}
-                  >
-                    Pratinjau
-                  </button>
-                </div>
-              </div>
-
-              <button
-                onClick={runCTRABTest}
-                disabled={simulatingCTR || !titleA.trim() || !titleB.trim()}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white font-bold text-xs sm:text-sm py-3 px-4 rounded-xl transition-all shadow-lg shadow-red-600/10 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {simulatingCTR ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    Menganalisis Pola Psikologis Klik...
-                  </>
-                ) : (
-                  <>
-                    <Cpu className="w-4 h-4" />
-                    Bandingkan & Prediksi CTR dengan AI
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Right: Live Preview & AI Audit Report */}
-            <div className="flex flex-col gap-4">
-              {/* YouTube Video Feed Card Live Preview */}
-              <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex flex-col items-center justify-center">
-                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-3.5 text-center block">Visualisasi YouTube Feed Mockup</span>
-                <div className="w-full max-w-[290px] bg-zinc-900/20 rounded-xl overflow-hidden border border-zinc-800/60 shadow-2xl">
-                  {/* Simulated Thumbnail */}
-                  <div className="relative aspect-video bg-gradient-to-tr from-red-950/40 via-zinc-900 to-red-900/30 flex items-center justify-center group overflow-hidden">
-                    <div className="absolute inset-0 bg-black/15 group-hover:bg-black/35 transition-colors"></div>
-                    <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                      <Play className="w-5 h-5 text-white fill-current ml-0.5" />
-                    </div>
-                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/85 text-[9px] font-black rounded text-white tracking-wide">12:35</span>
-                  </div>
-                  
-                  {/* Details */}
-                  <div className="p-3 flex gap-3 text-left">
-                    {/* Avatar */}
-                    <img
-                      src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
-                      alt="Avatar"
-                      className="w-8 h-8 rounded-full bg-zinc-800 object-cover ring-1 ring-zinc-700/40 mt-0.5 shrink-0"
-                    />
-                    <div className="flex flex-col min-w-0">
-                      <h4 className="text-[11px] sm:text-xs font-bold text-white leading-snug line-clamp-2">
-                        {activePreview === 'A' ? (titleA || 'Ketik judul kandidat A di kiri...') : (titleB || 'Ketik judul kandidat B di kiri...')}
-                      </h4>
-                      <span className="text-[10px] text-zinc-400 font-semibold mt-1 truncate">{userData.name || 'Creator Channel'}</span>
-                      <span className="text-[9px] text-zinc-500 font-bold mt-0.5">142K views • 3 hours ago</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Result Card Section */}
-          {ctrResult && (
-            <div className="border-t border-zinc-850 pt-5 space-y-4 animate-in fade-in duration-200">
-              <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-4 sm:p-5 text-left grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Result Judul A */}
-                <div className="space-y-2 border-b md:border-b-0 md:border-r border-zinc-800/80 pb-4 md:pb-0 md:pr-5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Kandidat Judul A</span>
-                    <span className="text-[10px] font-black uppercase bg-zinc-950 border border-zinc-850 px-2 py-0.5 rounded text-white">Score: {ctrResult.scoreA}/100</span>
-                  </div>
-                  <div className="text-sm font-bold text-white line-clamp-2">"{titleA}"</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] font-bold text-zinc-500">Estimasi CTR:</span>
-                    <span className="text-xs font-black text-red-500">{ctrResult.ctrA}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {ctrResult.triggersA?.map((t: string) => (
-                      <span key={t} className="text-[9px] font-bold text-red-400 bg-red-950/20 border border-red-900/30 px-2 py-0.5 rounded-full">{t}</span>
-                    ))}
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed mt-3">{ctrResult.verdictA}</p>
-                </div>
-
-                {/* Result Judul B */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Kandidat Judul B</span>
-                    <span className="text-[10px] font-black uppercase bg-zinc-950 border border-zinc-850 px-2 py-0.5 rounded text-white">Score: {ctrResult.scoreB}/100</span>
-                  </div>
-                  <div className="text-sm font-bold text-white line-clamp-2">"{titleB}"</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] font-bold text-zinc-500">Estimasi CTR:</span>
-                    <span className="text-xs font-black text-red-500">{ctrResult.ctrB}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {ctrResult.triggersB?.map((t: string) => (
-                      <span key={t} className="text-[9px] font-bold text-red-400 bg-red-950/20 border border-red-900/30 px-2 py-0.5 rounded-full">{t}</span>
-                    ))}
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed mt-3">{ctrResult.verdictB}</p>
-                </div>
-              </div>
-
-              {/* Verdict Summary Box */}
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-5 text-left space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                  <span className="text-xs font-black uppercase text-green-500 tracking-wider">Pemenang Terbaik: Kandidat {ctrResult.winner}</span>
-                </div>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{ctrResult.reason}</p>
-                
-                {/* Recommended Title C */}
-                <div className="border-t border-zinc-850 pt-3 mt-2">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">Rekomendasi Judul C (Hybrid Pengikat CTR Tertinggi):</span>
-                  <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 px-3.5 py-3 rounded-xl gap-3">
-                    <span className="text-xs sm:text-sm font-bold text-yellow-500">"{ctrResult.titleC}"</span>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(ctrResult.titleC);
-                        showToast("Judul rekomendasi berhasil disalin!");
-                      }}
-                      className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-[10px] font-black text-zinc-300 transition-all uppercase tracking-wider active:scale-95 shrink-0"
-                    >
-                      Salin Judul
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <TitleSimulator 
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          userData={userData}
+        />
 
         {/* Image Generator Card */}
-        <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-zinc-800/80 pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="bg-emerald-500/10 border border-emerald-500/25 p-2 rounded-xl text-emerald-500 shrink-0">
-                <Palette className="w-5 h-5 animate-pulse" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Image Generator [BETA]</h3>
-                <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Buat thumbnail atau visual brand dengan Pollinations Image API langsung dari dashboard.</p>
-              </div>
-            </div>
-          </div>
+        <ImageGenerator 
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          callPollinationsImage={callPollinationsImage}
+          callPollinationsVideo={callPollinationsVideo}
+          showToast={showToast}
+        />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Prompt Gambar</label>
-                <textarea
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  rows={4}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 text-xs text-white rounded-2xl px-4 py-3 outline-none transition-all"
-                  placeholder="Contoh: Thumbnail cinematic premium dengan teks merah neon dan karakter dinamis..."
-                />
-              </div>
+        {/* Bedah Video Kompetitor Card */}
+        <CompetitorAnalyzer 
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          getAccessToken={getAccessToken}
+          formatMarkdown={formatMarkdown}
+        />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Model Gambar</label>
-                  <select
-                    value={imageModel}
-                    onChange={(e) => setImageModel(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-xl px-4 py-3 focus:ring-1 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
-                  >
-                    <option value="flux">flux</option>
-                    <option value="stable">stable</option>
-                    <option value="openai">openai</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={generateImage}
-                    disabled={imageLoading}
-                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {imageLoading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Mengenerate Gambar...</>
-                    ) : (
-                      'Generate Image'
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {imageError && (
-                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">{imageError}</div>
-              )}
-            </div>
-
-            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl min-h-[280px] flex flex-col items-center justify-center p-4 text-center">
-              {imageResult ? (
-                <div className="space-y-4 w-full">
-                  <img src={imageResult} alt="Generated" className="mx-auto rounded-3xl max-h-[320px] w-full object-contain border border-zinc-800" />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(imagePrompt);
-                      showToast('Prompt gambar berhasil disalin!');
-                    }}
-                    className="w-full bg-zinc-900/80 text-zinc-200 text-[10px] uppercase tracking-widest font-bold px-4 py-3 rounded-2xl transition-all hover:bg-zinc-800"
-                  >Salin Prompt</button>
-                </div>
-              ) : (
-                <div className="text-zinc-500 text-xs leading-relaxed">
-                  Masukkan prompt gambar di sebelah kiri lalu klik Generate Image untuk membuat visual AI yang relevan dengan channel Anda.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Bedah Visual & Thumbnail Card */}
+        <VisualDissector 
+          globalTopic={globalTopic}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          formatMarkdown={formatMarkdown}
+        />
 
         <div className="flex flex-col sm:flex-row justify-between items-center bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 gap-4 shadow-xl">
             <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
