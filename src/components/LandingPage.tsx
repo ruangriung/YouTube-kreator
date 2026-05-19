@@ -239,7 +239,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <span>&bull;</span>
             <Link to="/terms-of-service" className="hover:text-red-500 transition-colors">Terms of Service</Link>
           </div>
-          <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} CreatorBlueprint. Built with AI Studio.</p>
+          <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} Auto Pilot AI Commander. Didesain oleh Arek Gresik.</p>
         </div>
       </footer>
 
