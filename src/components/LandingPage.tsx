@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2 } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv, Heart } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 
@@ -69,7 +69,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 z-10 max-w-5xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-red-400 mb-8 lowercase tracking-wide">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>didukung oleh pollinations ai</span>
+          <span>didukung oleh sistem ai autopilot tingkat lanjut</span>
         </div>
         
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
@@ -80,8 +80,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         </h1>
         
         <p className="text-zinc-400 text-lg md:text-xl max-w-2xl font-light mb-10 leading-relaxed">
-          Ubah ide acak menjadi strategi konten taktis. Riset niche, kalender produksi, 
-          hingga skrip video—semuanya digenerate AI secara autopilot.
+          Ubah ide acak menjadi rencana konten taktis secara instan. Riset niche mendalam, formula hook viral, storyboard visual, hingga draf skrip video siap pakai—semuanya digenerate AI secara autopilot.
         </p>
 
         {errorMsg && (
@@ -131,20 +130,23 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         )}
       </main>
 
-      {/* Feature Section */}
+      {/* Feature & Benefits Section */}
       <section className="border-t border-zinc-900 bg-black/50 backdrop-blur-3xl z-10">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="text-center mb-16">
-             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Kenapa menggunakan sistem ini?</h2>
+             <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">6 Benefit Utama Autopilot AI</h2>
+             <p className="text-zinc-500 text-sm md:text-base max-w-xl mx-auto font-light leading-relaxed">
+               Dapatkan seluruh alur kerja profesional kreator konten YouTube kelas dunia yang digenerate otomatis dalam satu dashboard terintegrasi.
+             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
               <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
                 <BrainCircuit className="w-6 h-6 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Riset Taktis AI</h3>
-              <p className="text-zinc-400 leading-relaxed text-sm">
-                Temukan micro-niche yang belum jenuh, buat judul viral, dan bongkar psikologi audiens dengan analisis Pollinations AI tingkat lanjut.
+              <h3 className="text-xl font-bold mb-3">1. Riset Mikro-Niche Taktis</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Temukan target audiens ideal dan sub-niche tersegmentasi yang konsisten agar terhindar dari burnout dan mempercepat monetisasi.
               </p>
             </div>
             
@@ -152,9 +154,9 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6">
                 <Sparkles className="w-6 h-6 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Autopilot Command Center</h3>
-              <p className="text-zinc-400 leading-relaxed text-sm">
-                Jalankan seluruh modul riset dan strategi AI secara otomatis dengan satu klik untuk meluncurkan konten viral secara masif.
+              <h3 className="text-xl font-bold mb-3">2. Analisis Konten Pesaing Viral</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Bongkar psikologi audiens, bedah 50 pola video viral di niche Anda, dan pelajari emosi pemicu interaksi komentar yang tinggi.
               </p>
             </div>
             
@@ -162,11 +164,69 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6">
                 <Rocket className="w-6 h-6 text-green-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Eksekusi Massal</h3>
-              <p className="text-zinc-400 leading-relaxed text-sm">
-                Pelajari strategi batching, repurposing konten untuk Reels/TikTok, dan atasi burnout dengan panduan operasional kreator.
+              <h3 className="text-xl font-bold mb-3">3. Formula Hooks Adiktif</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Miliki formula teks kalimat pancingan (hooks) 3 detik pertama dengan intonasi vokal dramatis agar penonton tidak skip video Anda.
               </p>
             </div>
+
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6">
+                <Target className="w-6 h-6 text-amber-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">4. Storyboard Visual Canggih</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Rancang storyboard visual detik-demi-detik lengkap dengan montase B-roll, transisi musik latar, pergerakan kamera, dan SFX.
+              </p>
+            </div>
+
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6">
+                <Tv className="w-6 h-6 text-purple-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">5. Draf Skrip Video Siap Pakai</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Hasilkan naskah video utuh siap baca dengan pilihan gaya bahasa yang dinamis, intonasi berbicara, hingga petunjuk visual lengkap.
+              </p>
+            </div>
+
+            <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 transition-colors">
+              <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
+                <Heart className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">6. Desain Thumbnail CTR Tinggi</h3>
+              <p className="text-zinc-400 leading-relaxed text-xs sm:text-sm">
+                Strategi menyusun tata letak warna kontras, ekspresi karakter penarik klik, dan pesan tulisan pendek pemicu rasa penasaran.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Me Section */}
+      <section className="border-t border-zinc-900 bg-zinc-950/30 z-10 py-16">
+        <div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+          <div className="relative group flex-shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-800 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500"></div>
+            <img 
+              src="/assets/arekgresikID.jpg" 
+              alt="Designer arek Gresik" 
+              className="relative w-32 h-32 md:w-36 md:h-36 rounded-full object-cover ring-4 ring-zinc-800/80 group-hover:ring-red-500/50 transition-all duration-300 shadow-2xl"
+              onError={(e) => {
+                e.currentTarget.src = "https://api.dicebear.com/7.x/bottts/svg?seed=arekgresik";
+              }}
+            />
+          </div>
+          <div className="space-y-4 max-w-xl">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-wider">
+              Designer & Developer
+            </span>
+            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Didesain oleh Arek Gresik 🇮🇩
+            </h3>
+            <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-light">
+              Hai! Produk ini dirancang dan dikembangkan dengan penuh dedikasi oleh **arek Gresik** asli untuk membantu para kreator Indonesia meraih kebebasan finansial dan melipatgandakan produktivitas konten mereka secara cerdas, taktis, dan autopilot.
+            </p>
           </div>
         </div>
       </section>
