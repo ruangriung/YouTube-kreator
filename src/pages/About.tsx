@@ -107,10 +107,10 @@ export default function About() {
             <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-850 p-4 rounded-2xl w-fit">
               <Mail className="w-5 h-5 text-red-500 flex-shrink-0" />
               <a 
-                href="mailto:arekgresikid@gmail.com" 
+                href="mailto:admin@kreatorautopilot.my.id" 
                 className="text-white font-semibold hover:text-red-400 transition text-sm sm:text-base"
               >
-                admin@arekgresikid@gmail.com
+                admin@kreatorautopilot.my.id
               </a>
             </div>
           </section>
