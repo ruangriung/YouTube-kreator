@@ -41,27 +41,48 @@ export async function onRequest(context: any) {
     const { DB } = env;
 
     // Periksa apakah tabel users sudah ada, jika belum, ini adalah setup pertama
-    // Untuk safety, sebaiknya setup tabel dilakukan manual via Wrangler atau di sini kita coba buat:
     await DB.prepare(`CREATE TABLE IF NOT EXISTS users (
       email TEXT PRIMARY KEY,
       role TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      expires_at DATETIME
     )`).run();
+
+    // Jalankan migrasi mandiri penambahan kolom expires_at (jika sebelumnya sudah terbuat tanpa kolom ini)
+    try {
+      await DB.prepare('ALTER TABLE users ADD COLUMN expires_at DATETIME').run();
+    } catch (e) {
+      // Kolom sudah ada atau tabel baru terbuat dengan skema lengkap
+    }
 
     // Periksa jumlah user. Jika kosong, user pertama otomatis jadi ADMIN.
     const countRes = await DB.prepare('SELECT COUNT(*) as count FROM users').first();
     const count = countRes ? countRes.count : 0;
 
-    let userRec = await DB.prepare('SELECT * FROM users WHERE email = ?').bind(user.email).first();
+    let userRec: any = await DB.prepare('SELECT * FROM users WHERE email = ?').bind(user.email).first();
 
     if (!userRec) {
       if (count === 0) {
-        // User pertama
-        await DB.prepare('INSERT INTO users (email, role) VALUES (?, ?)').bind(user.email, 'ADMIN').run();
-        userRec = { email: user.email, role: 'ADMIN' };
+        // User pertama (otomatis ADMIN dengan akses Lifetime)
+        await DB.prepare("INSERT INTO users (email, role, expires_at) VALUES (?, ?, '9999-12-31 23:59:59')").bind(user.email, 'ADMIN').run();
+        userRec = { email: user.email, role: 'ADMIN', expires_at: '9999-12-31 23:59:59' };
       } else {
         return new Response(JSON.stringify({
           error: 'User tidak terdaftar di sistem. Hubungi Admin.',
+          email: user.email,
+          name: user.name,
+          picture: user.picture
+        }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // Pengecekan Masa Aktif Langganan (Hanya berlaku untuk non-ADMIN)
+    if (userRec.role !== 'ADMIN' && userRec.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(userRec.expires_at);
+      if (now > expiresAt) {
+        return new Response(JSON.stringify({
+          error: `Masa aktif langganan Anda telah berakhir pada ${expiresAt.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}. Hubungi Admin untuk melakukan perpanjangan.`,
           email: user.email,
           name: user.name,
           picture: user.picture
@@ -74,7 +95,8 @@ export async function onRequest(context: any) {
         email: user.email,
         name: user.name,
         picture: user.picture,
-        role: userRec.role
+        role: userRec.role,
+        expires_at: userRec.expires_at
       }
     }), { headers: { 'Content-Type': 'application/json' } });
 

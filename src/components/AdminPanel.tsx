@@ -7,6 +7,8 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('USER');
+  const [subType, setSubType] = useState('lifetime'); // 'lifetime', '1_month', '3_months', '1_year', 'custom'
+  const [customDate, setCustomDate] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchUsers = async () => {
@@ -33,6 +35,27 @@ export default function AdminPanel() {
     if (!newEmail) return;
     try {
       setLoading(true);
+      setErrorMsg('');
+
+      let expiresAt = '9999-12-31 23:59:59';
+      if (newRole === 'USER') {
+        if (subType === '1_month') {
+          const d = new Date();
+          d.setDate(d.getDate() + 30);
+          expiresAt = d.toISOString().replace('T', ' ').substring(0, 19);
+        } else if (subType === '3_months') {
+          const d = new Date();
+          d.setDate(d.getDate() + 90);
+          expiresAt = d.toISOString().replace('T', ' ').substring(0, 19);
+        } else if (subType === '1_year') {
+          const d = new Date();
+          d.setDate(d.getDate() + 365);
+          expiresAt = d.toISOString().replace('T', ' ').substring(0, 19);
+        } else if (subType === 'custom' && customDate) {
+          expiresAt = `${customDate} 23:59:59`;
+        }
+      }
+
       const token = await getAccessToken();
       const res = await fetch('/api/users', {
         method: 'POST',
@@ -40,10 +63,15 @@ export default function AdminPanel() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email: newEmail, role: newRole })
+        body: JSON.stringify({ 
+          email: newEmail.trim().toLowerCase(), 
+          role: newRole, 
+          expires_at: expiresAt 
+        })
       });
-      if (!res.ok) throw new Error('Gagal menambah user');
+      if (!res.ok) throw new Error('Gagal menambah/memperbarui user');
       setNewEmail('');
+      setCustomDate('');
       await fetchUsers();
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -91,31 +119,76 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      <form onSubmit={handleAddUser} className="flex flex-col sm:flex-row gap-3 mb-8 bg-black/30 p-4 rounded-xl border border-zinc-800/50">
-        <input 
-          type="email" 
-          required
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          placeholder="Email Google pengguna baru..."
-          className="flex-1 bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-blue-500 outline-none"
-        />
-        <select 
-          value={newRole}
-          onChange={(e) => setNewRole(e.target.value)}
-          className="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-blue-500 outline-none"
-        >
-          <option value="USER">User Biasa</option>
-          <option value="ADMIN">Admin</option>
-        </select>
-        <button 
-          type="submit"
-          disabled={loading}
-          className="bg-zinc-100 hover:bg-white text-black font-bold px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-        >
-          <UserPlus className="w-4 h-4" />
-          Tambahkan
-        </button>
+      <form onSubmit={handleAddUser} className="space-y-4 mb-8 bg-black/30 p-5 rounded-2xl border border-zinc-800/50">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Email Google Pengguna:</label>
+            <input 
+              type="email" 
+              required
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Email Google pengguna..."
+              className="w-full bg-zinc-900 border border-zinc-750 text-white text-sm rounded-xl px-4 py-2.5 focus:ring-1 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Peran / Role:</label>
+            <select 
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-750 text-white text-sm rounded-xl px-4 py-2.5 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+            >
+              <option value="USER">User Biasa (Akses Terbatas Langganan)</option>
+              <option value="ADMIN">Admin (Akses Selamanya & Panel Admin)</option>
+            </select>
+          </div>
+        </div>
+
+        {newRole === 'USER' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+            <div>
+              <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Durasi Langganan / Masa Aktif:</label>
+              <select 
+                value={subType}
+                onChange={(e) => setSubType(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-750 text-white text-sm rounded-xl px-4 py-2.5 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+              >
+                <option value="lifetime">Selamanya (Lifetime / Akses Penuh)</option>
+                <option value="1_month">1 Bulan (Uji Coba/Langganan Bulanan)</option>
+                <option value="3_months">3 Bulan (Akses Sedang)</option>
+                <option value="1_year">1 Tahun (Langganan Tahunan)</option>
+                <option value="custom">Pilih Tanggal Kustom...</option>
+              </select>
+            </div>
+
+            {subType === 'custom' ? (
+              <div>
+                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Hingga Tanggal Berapa:</label>
+                <input 
+                  type="date" 
+                  required
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-750 text-white text-sm rounded-xl px-4 py-2.5 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+                />
+              </div>
+            ) : (
+              <div className="hidden sm:block"></div>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-end pt-2">
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-auto bg-zinc-100 hover:bg-white text-black font-extrabold px-6 py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+          >
+            <UserPlus className="w-4 h-4" />
+            Simpan / Perbarui Pengguna
+          </button>
+        </div>
       </form>
 
       <div className="overflow-x-auto">
@@ -124,35 +197,56 @@ export default function AdminPanel() {
             <tr>
               <th className="px-4 py-3 text-left">Email</th>
               <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Status Langganan</th>
               <th className="px-4 py-3">Didaftarkan Pada</th>
               <th className="px-4 py-3">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {users.map(u => (
-              <tr key={u.email} className="border-b border-zinc-800/50 hover:bg-zinc-800/20 text-center">
-                <td className="px-4 py-3 text-left font-medium text-white">{u.email}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${u.role === 'ADMIN' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                    {u.role}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs text-zinc-500">{new Date(u.created_at).toLocaleString('id-ID')}</td>
-                <td className="px-4 py-3">
-                  <button 
-                    onClick={() => handleRemoveUser(u.email)}
-                    className="text-zinc-500 hover:text-red-500 p-1 transition-colors"
-                    title="Hapus Pengguna"
-                  >
-                    <Trash2 className="w-4 h-4 mx-auto" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
-                <tr>
-                    <td colSpan={4} className="text-center py-8 text-zinc-500">Belum ada user.</td>
+            {users.map(u => {
+              const isExpired = u.role !== 'ADMIN' && u.expires_at && new Date() > new Date(u.expires_at);
+              const isLifetime = !u.expires_at || u.expires_at.startsWith('9999');
+
+              return (
+                <tr key={u.email} className="border-b border-zinc-800/50 hover:bg-zinc-800/20 text-center">
+                  <td className="px-4 py-3 text-left font-medium text-white">{u.email}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/20' : 'bg-blue-500/20 text-blue-400 border border-blue-500/20'}`}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {isLifetime ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/10">
+                        Lifetime / Selamanya
+                      </span>
+                    ) : isExpired ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-500/10 text-red-500 border border-red-500/20">
+                        EXPIRED ({new Date(u.expires_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })})
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        AKTIF (s.d. {new Date(u.expires_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })})
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-zinc-500">{new Date(u.created_at).toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3">
+                    <button 
+                      onClick={() => handleRemoveUser(u.email)}
+                      className="text-zinc-500 hover:text-red-500 p-1 transition-colors"
+                      title="Hapus Pengguna"
+                    >
+                      <Trash2 className="w-4 h-4 mx-auto" />
+                    </button>
+                  </td>
                 </tr>
+              );
+            })}
+            {users.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-8 text-zinc-500">Belum ada user.</td>
+              </tr>
             )}
           </tbody>
         </table>

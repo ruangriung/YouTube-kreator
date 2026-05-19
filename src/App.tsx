@@ -998,10 +998,28 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
                     <div className="flex flex-col text-left overflow-hidden">
                       <span className="text-xs font-black text-white truncate">{userData.name || 'Creator'}</span>
                       <span className="text-[10px] text-zinc-400 font-bold truncate">{userData.email}</span>
-                      {userData.role?.toLowerCase() === 'admin' && (
+                      {userData.role?.toLowerCase() === 'admin' ? (
                         <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[8px] font-black uppercase tracking-wider w-max">
                           <ShieldAlert className="w-2 h-2" /> Administrator
                         </span>
+                      ) : (
+                        (() => {
+                          const isLifetime = !userData.expires_at || userData.expires_at.startsWith('9999');
+                          if (isLifetime) {
+                            return (
+                              <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400 text-[8px] font-black uppercase tracking-wider w-max">
+                                Lifetime Access
+                              </span>
+                            );
+                          } else {
+                            const dateStr = new Date(userData.expires_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+                            return (
+                              <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[8px] font-black uppercase tracking-wider w-max">
+                                Aktif s.d. {dateStr}
+                              </span>
+                            );
+                          }
+                        })()
                       )}
                     </div>
                   </div>

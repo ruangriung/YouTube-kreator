@@ -50,10 +50,16 @@ export async function onRequest(context: any) {
     return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
   }
 
-  // POST: Add new user
+  // POST: Add or Update user (Mendukung Perpanjangan Langganan)
   if (request.method === 'POST') {
-    const { email, role } = await request.json();
-    await DB.prepare('INSERT INTO users (email, role) VALUES (?, ?)').bind(email, role || 'USER').run();
+    const { email, role, expires_at } = await request.json();
+    await DB.prepare(`
+      INSERT INTO users (email, role, expires_at) 
+      VALUES (?, ?, ?)
+      ON CONFLICT(email) DO UPDATE SET 
+        role = excluded.role,
+        expires_at = excluded.expires_at
+    `).bind(email, role || 'USER', expires_at || '9999-12-31 23:59:59').run();
     return new Response(JSON.stringify({ success: true }));
   }
 
