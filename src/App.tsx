@@ -381,6 +381,10 @@ export default function App() {
   const [ctrResult, setCtrResult] = useState<any>(null);
   const [imagePrompt, setImagePrompt] = useState('Thumbnail epik dengan gaya cinematic premium');
   const [imageModel, setImageModel] = useState('flux');
+  const [imageStyle, setImageStyle] = useState('Cinematic Premium');
+  const [imageAspect, setImageAspect] = useState('16:9');
+  const [thumbnailText, setThumbnailText] = useState('Teks thumbnail 3 kata');
+  const [promptLoading, setPromptLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageResult, setImageResult] = useState<string | null>(null);
   const [imageError, setImageError] = useState('');
@@ -639,8 +643,48 @@ PENTING: Berikan ide niche/topik yang sangat unik, tidak biasa, jarang terpikirk
     }
   };
 
+  const buildThumbnailPrompt = () => {
+    const basePrompt = imagePrompt.trim() || `Thumbnail YouTube berkualitas tinggi dengan gaya ${imageStyle}`;
+    const promptParts = [
+      basePrompt,
+      `Style: ${imageStyle}`,
+      `Aspect ratio: ${imageAspect}`,
+      thumbnailText ? `Teks overlay: ${thumbnailText}` : 'Teks overlay singkat yang jelas dan menarik',
+      globalTopic ? `Topik utama channel: ${globalTopic}` : 'Topik utama channel tidak diset',
+      (titleA || titleB) ? `Judul video contoh: ${activePreview === 'A' ? titleA : titleB}` : 'Gunakan judul video yang memicu rasa penasaran',
+      'Hasilkan visual thumbnail CTR tinggi dengan kontras warna tegas, teks besar, dan fokus pada ekspresi atau elemen klik magnetis.'
+    ].filter(Boolean);
+    return promptParts.join('. ');
+  };
+
+  const suggestThumbnailPrompt = async () => {
+    if (!globalTopic) {
+      showToast('Tulis Topik Utama Channel Anda di kolom atas dahulu dan klik Set Topik Utama!');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setPromptLoading(true);
+    setImageError('');
+
+    try {
+      const systemInstruction = 'Anda adalah Art Director YouTube profesional yang membuat prompt AI thumbnail terbaik.';
+      const prompt = `Buat prompt gambar untuk thumbnail YouTube CTR tinggi yang ideal untuk topik: "${globalTopic}". Gaya utama: ${imageStyle}. Aspect ratio: ${imageAspect}. Teks overlay yang diinginkan: "${thumbnailText}". Sertakan elemen visual seperti kontras kuat, ekspresi wajah dramatis atau objek klik-magnet, teks besar mudah dibaca, dan warna yang memaksa perhatian. Jangan sertakan penjelasan, hanya berikan prompt gambar AI saat digunakan.`;
+      const generated = await callPollinationsAI(prompt, systemInstruction, selectedModel);
+      setImagePrompt(generated.trim());
+      showToast('Prompt thumbnail otomatis berhasil dibuat.');
+    } catch (err: any) {
+      console.error(err);
+      setImageError('Gagal membuat prompt thumbnail otomatis. Coba lagi.');
+    } finally {
+      setPromptLoading(false);
+    }
+  };
+
   const generateImage = async () => {
-    if (!imagePrompt.trim()) {
+    const prompt = buildThumbnailPrompt();
+
+    if (!prompt.trim()) {
       setImageError('Silakan isi prompt gambar terlebih dahulu.');
       return;
     }
@@ -649,7 +693,7 @@ PENTING: Berikan ide niche/topik yang sangat unik, tidak biasa, jarang terpikirk
     setImageResult(null);
 
     try {
-      const imageData = await callPollinationsImage(imagePrompt, imageModel);
+      const imageData = await callPollinationsImage(prompt, imageModel);
       setImageResult(imageData);
     } catch (err: any) {
       console.error(err);
@@ -1549,6 +1593,45 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Gaya Thumbnail</label>
+                  <select
+                    value={imageStyle}
+                    onChange={(e) => setImageStyle(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-xl px-4 py-3 focus:ring-1 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
+                  >
+                    <option value="Cinematic Premium">Cinematic Premium</option>
+                    <option value="Bold Contrast">Bold Contrast</option>
+                    <option value="Minimalis Modern">Minimalis Modern</option>
+                    <option value="Dramatic Close-Up">Dramatic Close-Up</option>
+                    <option value="Street Style Pop">Street Style Pop</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Aspect Ratio</label>
+                  <select
+                    value={imageAspect}
+                    onChange={(e) => setImageAspect(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-xl px-4 py-3 focus:ring-1 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
+                  >
+                    <option value="16:9">16:9 (Thumbnail)</option>
+                    <option value="9:16">9:16 (Shorts Cover)</option>
+                    <option value="4:5">4:5 (Feed Style)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Teks Overlay</label>
+                  <input
+                    type="text"
+                    value={thumbnailText}
+                    onChange={(e) => setThumbnailText(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-xl px-4 py-3 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                    placeholder="Contoh: JANGAN DITONTON"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Prompt Gambar</label>
                 <textarea
@@ -1560,7 +1643,7 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Model Gambar</label>
                   <select
@@ -1572,6 +1655,19 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
                     <option value="stable">stable</option>
                     <option value="openai">openai</option>
                   </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={suggestThumbnailPrompt}
+                    disabled={promptLoading}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {promptLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Membuat Prompt...</>
+                    ) : (
+                      'Buat Prompt Otomatis'
+                    )}
+                  </button>
                 </div>
                 <div className="flex items-end">
                   <button
@@ -1597,13 +1693,22 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
               {imageResult ? (
                 <div className="space-y-4 w-full">
                   <img src={imageResult} alt="Generated" className="mx-auto rounded-3xl max-h-[320px] w-full object-contain border border-zinc-800" />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(imagePrompt);
-                      showToast('Prompt gambar berhasil disalin!');
-                    }}
-                    className="w-full bg-zinc-900/80 text-zinc-200 text-[10px] uppercase tracking-widest font-bold px-4 py-3 rounded-2xl transition-all hover:bg-zinc-800"
-                  >Salin Prompt</button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(imagePrompt);
+                        showToast('Prompt gambar berhasil disalin!');
+                      }}
+                      className="w-full bg-zinc-900/80 text-zinc-200 text-[10px] uppercase tracking-widest font-bold px-4 py-3 rounded-2xl transition-all hover:bg-zinc-800"
+                    >Salin Prompt</button>
+                    <a
+                      href={imageResult}
+                      download="thumbnail.png"
+                      className="w-full inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-black text-[10px] uppercase tracking-widest font-bold px-4 py-3 rounded-2xl transition-all"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Unduh Gambar
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <div className="text-zinc-500 text-xs leading-relaxed">
