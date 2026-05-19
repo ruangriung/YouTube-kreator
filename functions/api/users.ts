@@ -12,6 +12,21 @@ export async function onRequest(context: any) {
   const { request, env } = context;
   const { DB } = env;
 
+  // Periksa apakah tabel users sudah ada, jika belum, ini adalah setup pertama
+  await DB.prepare(`CREATE TABLE IF NOT EXISTS users (
+    email TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME
+  )`).run();
+
+  // Jalankan migrasi mandiri penambahan kolom expires_at (jika sebelumnya sudah terbuat tanpa kolom ini)
+  try {
+    await DB.prepare('ALTER TABLE users ADD COLUMN expires_at DATETIME').run();
+  } catch (e) {
+    // Kolom sudah ada atau tabel baru terbuat dengan skema lengkap
+  }
+
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) return new Response('Unauthorized', { status: 401 });
   const token = authHeader.split(' ')[1];
