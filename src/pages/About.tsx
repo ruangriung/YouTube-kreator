@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Youtube, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Youtube, CheckCircle2, Mail } from 'lucide-react';
 
 export default function About() {
   return (
@@ -23,7 +23,7 @@ export default function About() {
               Auto Pilot AI Commander
             </h2>
             <p className="text-zinc-400">
-              **Auto Pilot AI Commander** adalah sistem asisten taktis berbasis kecerdasan buatan (*AI*) yang dirancang khusus untuk memotong waktu riset dan eksekusi konten bagi para kreator YouTube. Kami percaya bahwa setiap ide hebat layak mendapatkan strategi penyajian visual dan audio terbaik tanpa harus membuat kreator stres atau mengalami *burnout*.
+              <strong className="text-white">Auto Pilot AI Commander</strong> merupakan platform asisten taktis cerdas bertenaga AI yang didekasikan untuk mempermudah alur kerja konten kreator YouTube. Kami mengintegrasikan teknologi riset berbasis data dan optimasi retensi penonton ke dalam satu lembar kerja terpadu. Misi kami adalah memberdayakan kreator untuk memproduksi konten berkualitas tinggi secara efisien, bebas dari hambatan kreatif, serta menjaga konsistensi pertumbuhan saluran secara berkelanjutan.
             </p>
           </section>
 
@@ -43,12 +43,12 @@ export default function About() {
               </div>
               <div>
                 <h3 className="text-lg font-black text-white">Karya Kreatif Arek Gresik</h3>
-                <p className="text-xs text-zinc-500">Dibuat dengan sepenuh hati di Jawa Timur</p>
+                <p className="text-xs text-zinc-500">Dibuat dengan sepenuh hati ❤️</p>
               </div>
             </div>
             
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Produk ini didesain dan dirancang secara orisinal oleh **arek Gresik** asli. Melalui dedikasi tinggi, kami ingin membuktikan bahwa talenta lokal mampu menghadirkan perangkat lunak premium berkualitas global yang mampu memberdayakan sesama kreator Indonesia dalam melipatgandakan produktivitas dan membangun aset digital profesional secara konsisten.
+              Platform ini dikembangkan dan dirancang secara orisinal oleh talenta berbakat dari <strong className="text-white">Gresik, Jawa Timur</strong>. Melalui dedikasi penuh pada keunggulan rekayasa perangkat lunak, kami berkomitmen membuktikan bahwa inovasi teknologi lokal mampu bersaing di tingkat global dan memberikan dampak nyata dalam meningkatkan produktivitas serta mempercepat pertumbuhan aset digital para kreator di seluruh Indonesia.
             </p>
           </section>
 
@@ -92,8 +92,26 @@ export default function About() {
               Bergabung Bersama Kami
             </h2>
             <p className="text-zinc-400 text-sm">
-              Mari bersama-sama meningkatkan ekosistem konten kreator edukatif dan menghibur di Indonesia. Dengan sekali pendaftaran QRIS senilai **Rp 69.000 (Lifetime Access)**, Anda sudah mendapatkan akses penuh tanpa batas ke seluruh fitur asisten AI taktis buatan arek Gresik ini.
+              Mari bersama-sama membangun dan meningkatkan kualitas ekosistem konten kreator di Indonesia. Melalui pendaftaran QRIS senilai <strong className="text-white">Rp 69.000 (Akses Lifetime)</strong>, Anda mendapatkan lisensi penuh tanpa batas ke seluruh fitur asisten AI taktis ini.
             </p>
+          </section>
+
+          <section className="space-y-4 pt-4 border-t border-zinc-900">
+            <h2 className="text-xl font-bold text-white uppercase tracking-wide">
+              Hubungi Layanan Dukungan
+            </h2>
+            <p className="text-zinc-400 text-sm">
+              Memiliki pertanyaan, kendala aktivasi, atau tertarik menjalin kolaborasi strategis? Silakan hubungi tim administrasi kami melalui surat elektronik resmi:
+            </p>
+            <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-850 p-4 rounded-2xl w-fit">
+              <Mail className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <a 
+                href="mailto:arekgresikid@gmail.com" 
+                className="text-white font-semibold hover:text-red-400 transition text-sm sm:text-base"
+              >
+                admin@arekgresikid@gmail.com
+              </a>
+            </div>
           </section>
         </div>
       </div>
