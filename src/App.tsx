@@ -1541,7 +1541,7 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
                 <Palette className="w-5 h-5 animate-pulse" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Image Generator</h3>
+                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Image Generator [BETA]</h3>
                 <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Buat thumbnail atau visual brand dengan Pollinations Image API langsung dari dashboard.</p>
               </div>
             </div>
