@@ -1434,6 +1434,42 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
 
       <main className="max-w-4xl mx-auto px-4 mt-8 space-y-6">
 
+        {/* Bedah Video Kompetitor Card */}
+        <CompetitorAnalyzer 
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          getAccessToken={getAccessToken}
+          formatMarkdown={formatMarkdown}
+        />
+
+        {/* Bedah Visual & Thumbnail Card */}
+        <VisualDissector 
+          globalTopic={globalTopic}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          formatMarkdown={formatMarkdown}
+        />
+
+        {/* YouTube Title & CTR A/B Test Simulator Card */}
+        <TitleSimulator 
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          userData={userData}
+        />
+
+        {/* Image Generator Card */}
+        <ImageGenerator 
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          callPollinationsImage={callPollinationsImage}
+          callPollinationsVideo={callPollinationsVideo}
+          showToast={showToast}
+        />
+
         {/* Charts Dashboard */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 shadow-xl h-64 flex flex-col">
@@ -1467,42 +1503,6 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
                 </div>
             </div>
         </div>
-
-        {/* YouTube Title & CTR A/B Test Simulator Card */}
-        <TitleSimulator 
-          globalTopic={globalTopic}
-          selectedModel={selectedModel}
-          callPollinationsAI={callPollinationsAI}
-          showToast={showToast}
-          userData={userData}
-        />
-
-        {/* Image Generator Card */}
-        <ImageGenerator 
-          globalTopic={globalTopic}
-          selectedModel={selectedModel}
-          callPollinationsAI={callPollinationsAI}
-          callPollinationsImage={callPollinationsImage}
-          callPollinationsVideo={callPollinationsVideo}
-          showToast={showToast}
-        />
-
-        {/* Bedah Video Kompetitor Card */}
-        <CompetitorAnalyzer 
-          selectedModel={selectedModel}
-          callPollinationsAI={callPollinationsAI}
-          showToast={showToast}
-          getAccessToken={getAccessToken}
-          formatMarkdown={formatMarkdown}
-        />
-
-        {/* Bedah Visual & Thumbnail Card */}
-        <VisualDissector 
-          globalTopic={globalTopic}
-          callPollinationsAI={callPollinationsAI}
-          showToast={showToast}
-          formatMarkdown={formatMarkdown}
-        />
 
         <div className="flex flex-col sm:flex-row justify-between items-center bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 gap-4 shadow-xl">
             <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
