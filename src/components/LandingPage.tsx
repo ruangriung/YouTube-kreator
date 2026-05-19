@@ -72,7 +72,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-red-500/30">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black -z-10"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black -z-10 pointer-events-none"></div>
       
       {/* Navbar Minimalis */}
       <nav className="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center z-10">
@@ -195,7 +195,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       </main>
 
       {/* Feature & Benefits Section */}
-      <section className="border-t border-zinc-900 bg-black/50 backdrop-blur-3xl z-10">
+      <section className="border-t border-zinc-900 bg-zinc-950/90 z-10">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="text-center mb-16">
              <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">6 Benefit Utama Autopilot AI</h2>
