@@ -1307,7 +1307,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
               Isi topik utama channel Anda di bawah ini, lalu klik salah satu dari 10 langkah emas untuk memproses strategi video, naskah, thumbnail, dan jadwal dengan AI secara khusus!
           </p>
 
-          <div className="mt-8 bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 max-w-2xl mx-auto shadow-2xl relative">
+          <div className="mt-8 bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 w-full mx-auto shadow-2xl relative text-left">
               <div className="absolute -top-3 left-6 px-3 py-0.5 bg-red-600 text-[10px] font-black uppercase rounded text-white tracking-widest">
                   Langkah Awal
               </div>
@@ -1414,7 +1414,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
               )}
           </div>
 
-          <div className="mt-4 bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-4 max-w-2xl mx-auto flex flex-col gap-4">
+          <div className="mt-4 bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-4 w-full mx-auto flex flex-col gap-4 text-left">
               <div>
                   <div className="flex justify-between items-center mb-1 text-xs">
                       <span className="text-zinc-400 font-medium">Progres Pelaksanaan & Implementasi Anda:</span>
