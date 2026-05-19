@@ -33,7 +33,12 @@ export const verifyAccount = async (accessToken: string) => {
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || 'Autentikasi gagal atau tidak diizinkan');
+    const error: any = new Error(data.error || 'Autentikasi gagal atau tidak diizinkan');
+    error.status = res.status;
+    error.email = data.email;
+    error.name = data.name;
+    error.picture = data.picture;
+    throw error;
   }
 
   const data = await res.json();

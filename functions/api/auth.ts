@@ -50,7 +50,12 @@ export async function onRequest(context: any) {
         await DB.prepare('INSERT INTO users (email, role) VALUES (?, ?)').bind(user.email, 'ADMIN').run();
         userRec = { email: user.email, role: 'ADMIN' };
       } else {
-        return new Response(JSON.stringify({ error: 'User tidak terdaftar di sistem. Hubungi Admin.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({
+          error: 'User tidak terdaftar di sistem. Hubungi Admin.',
+          email: user.email,
+          name: user.name,
+          picture: user.picture
+        }), { status: 403, headers: { 'Content-Type': 'application/json' } });
       }
     }
 

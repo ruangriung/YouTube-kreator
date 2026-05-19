@@ -352,6 +352,39 @@ export default function App() {
     return 'openai';
   });
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  const [outputLanguage, setOutputLanguage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ytBuilder_outputLanguage') || 'Bahasa Indonesia (Santai/Gaul)';
+    }
+    return 'Bahasa Indonesia (Santai/Gaul)';
+  });
+  const [visualStyle, setVisualStyle] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ytBuilder_visualStyle') || 'B-Roll Cepat & Dinamis';
+    }
+    return 'B-Roll Cepat & Dinamis';
+  });
+  const [skripLength, setSkripLength] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ytBuilder_skripLength') || 'Skrip Sedang (8-12 Menit)';
+    }
+    return 'Skrip Sedang (8-12 Menit)';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ytBuilder_outputLanguage', outputLanguage);
+  }, [outputLanguage]);
+
+  useEffect(() => {
+    localStorage.setItem('ytBuilder_visualStyle', visualStyle);
+  }, [visualStyle]);
+
+  useEffect(() => {
+    localStorage.setItem('ytBuilder_skripLength', skripLength);
+  }, [skripLength]);
   
   const isTopicUnsaved = topic.trim() !== globalTopic && topic.trim() !== '';
 
@@ -514,7 +547,13 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah asisten AI yang singkat, jelas, dan sangat memotivasi untuk kreator YouTube.";
-        const prompt = `Berikan SATU ide/tips taktis yang sangat spesifik (1-2 kalimat) dan SATU kalimat motivasi berapi-api untuk kreator YouTube dengan topik "${globalTopic}" yang sedang berada di langkah: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Tolong jangan panjang lebar. (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
+        const prompt = `Berikan SATU ide/tips taktis yang sangat spesifik (1-2 kalimat) dan SATU kalimat motivasi berapi-api untuk kreator YouTube dengan topik "${globalTopic}" yang sedang berada di langkah: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}.
+[KONTEKS SALURAN TAMBAHAN]:
+- Bahasa Output: ${outputLanguage}
+- Gaya Bahasa Visual: ${visualStyle}
+- Panjang Skrip Target: ${skripLength}
+
+PENTING: Berikan ide/tips dan motivasi yang sepenuhnya segar, unik, orisinal, dan berbeda dari ide konvensional biasa atau rekomendasi standar sebelumnya. Jelajahi sudut pandang alternatif yang berani dan kreatif! (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
 
         const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
@@ -549,7 +588,13 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah Direktur Seni (Art Director) YouTube visual yang jenius.";
-        const prompt = `Berikan 3 ide visual yang sangat berbeda (misal: konsep thumbnail, shot B-roll, atau overlay grafis) yang sejalan dengan topik "${globalTopic}" untuk tahap: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}. Deskripsikan setiap ide visual secara singkat dan jelas (1-2 kalimat per ide). Buat terstruktur dengan emoji. (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
+        const prompt = `Berikan 3 ide visual yang sangat berbeda (misal: konsep thumbnail, shot B-roll, atau overlay grafis) yang sejalan dengan topik "${globalTopic}" untuk tahap: ${section.title}. Parameter yang dipilih: ${JSON.stringify(sectionData[section.id].params)}.
+[KONTEKS SALURAN TAMBAHAN]:
+- Bahasa Output: ${outputLanguage}
+- Gaya Bahasa Visual: ${visualStyle}
+- Panjang Skrip Target: ${skripLength}
+
+PENTING: Jangan memberikan ide visual yang klise, biasa, atau berulang. Hasilkan 3 ide visual yang sangat kreatif, unik, out-of-the-box, menarik perhatian, dan orisinal! (Variasi Kreatif #${Math.floor(Math.random() * 1000000)})`;
 
         const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
@@ -573,7 +618,8 @@ export default function App() {
   const suggestTopicAI = async () => {
     try {
         setTopic("Menggali ide dari AI...");
-        const prompt = `Berikan 1 ide niche/topik channel YouTube berbahasa Indonesia yang sedang tren saat ini, tapi belum terlalu jenuh. Contoh format: 'Review Gadget Unik', 'Jelajah Kuliner Pedas'. Hanya berikan nama topiknya saja, maksimal 5-6 kata, tanpa penjelasan apa-apa. (Ide #${Math.floor(Math.random() * 1000000)})`;
+        const prompt = `Berikan 1 ide niche/topik channel YouTube berbahasa Indonesia yang sedang tren saat ini, tapi belum terlalu jenuh. Contoh format: 'Review Gadget Unik', 'Jelajah Kuliner Pedas'. Hanya berikan nama topiknya saja, maksimal 5-6 kata, tanpa penjelasan apa-apa.
+PENTING: Berikan ide niche/topik yang sangat unik, tidak biasa, jarang terpikirkan, namun memiliki potensi audiens yang tinggi. Hindari niche mainstream konvensional seperti review gadget biasa, gaming standar, vlog harian biasa, atau tutorial pemrograman dasar. Cari ide-ide yang inovatif dan segar! (Ide #${Math.floor(Math.random() * 1000000)})`;
         const text = await callPollinationsAI(prompt, undefined, selectedModel);
         setTopic(text.trim().replace(/^['"]|['"]$/g, ''));
     } catch (error) {
@@ -696,7 +742,13 @@ export default function App() {
 
     try {
         const systemInstruction = "Anda adalah Ahli Algoritma YouTube kelas dunia. Berikan saran taktis, langkah nyata, draf naskah konkret yang siap digunakan. Gunakan Bahasa Indonesia yang segar, kasual, bertenaga, dan sangat aplikatif. Format langsung aksi nyatanya dalam list poin yang rapi.";
-        const prompt = section.getPrompt(globalTopic, sectionDataRef.current[section.id].params) + ` (Variasi Unik #${Math.floor(Math.random() * 1000000)})`;
+        const prompt = section.getPrompt(globalTopic, sectionDataRef.current[section.id].params) + `
+[KONTEKS SALURAN TAMBAHAN]:
+- Bahasa Output: ${outputLanguage}
+- Gaya Bahasa Visual: ${visualStyle}
+- Panjang Skrip Target: ${skripLength}
+
+PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat tajam, taktis, segar, mendalam, dan memiliki nilai guna yang tinggi bagi kreator. Berikan draf ide/naskah konkret yang unik, tidak membosankan, kreatif, dan sepenuhnya berbeda dari materi umum standar! (Variasi Unik #${Math.floor(Math.random() * 1000000)})`;
 
         const text = await callPollinationsAI(prompt, systemInstruction, selectedModel);
 
@@ -781,53 +833,80 @@ export default function App() {
             <Brain className="w-5 h-5 text-white animate-pulse" />
           </div>
           <div>
-            <span className="font-black text-sm tracking-widest text-white block uppercase">YT KREATOR</span>
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block -mt-1">AI COMMAND CENTER</span>
+            <span className="font-black text-sm tracking-widest text-white block uppercase">AUTOPILOT AI</span>
+            <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider block -mt-1">COMMANDER</span>
           </div>
         </div>
 
         {/* Right: Dynamic Model Selector & User Dropdown */}
         <div className="flex items-center gap-4">
           {/* Dynamic Model Dropdown */}
-          <div className="relative group">
-            <div className="flex items-center gap-1.5 bg-zinc-900/90 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsModelDropdownOpen(!isModelDropdownOpen);
+                setIsUserDropdownOpen(false);
+              }}
+              className="flex items-center gap-1.5 bg-zinc-900/90 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer outline-none focus:outline-none"
+            >
               <Cpu className="w-3.5 h-3.5 text-red-500 animate-pulse" />
               <span className="max-w-[120px] truncate uppercase">{selectedModel}</span>
               <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-            </div>
-            <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1.5 overflow-hidden">
-              <div className="px-3.5 py-1.5 border-b border-zinc-800/60 mb-1">
-                <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Pilih Model AI Teks</span>
-              </div>
-              {models.length > 0 ? (
-                models.map((modelName) => (
-                  <button
-                    key={modelName}
-                    onClick={() => setSelectedModel(modelName)}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
-                  >
-                    <span className="truncate uppercase">{modelName}</span>
-                    {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
-                  </button>
-                ))
-              ) : (
-                ['openai', 'mistral', 'qwen', 'llama'].map((modelName) => (
-                  <button
-                    key={modelName}
-                    onClick={() => setSelectedModel(modelName)}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
-                  >
-                    <span className="truncate uppercase">{modelName}</span>
-                    {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
-                  </button>
-                ))
-              )}
-            </div>
+            </button>
+            
+            {isModelDropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                  onClick={() => setIsModelDropdownOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-3.5 py-1.5 border-b border-zinc-800/60 mb-1">
+                    <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Pilih Model AI Teks</span>
+                  </div>
+                  {models.length > 0 ? (
+                    models.map((modelName) => (
+                      <button
+                        key={modelName}
+                        onClick={() => {
+                          setSelectedModel(modelName);
+                          setIsModelDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                      >
+                        <span className="truncate uppercase">{modelName}</span>
+                        {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                      </button>
+                    ))
+                  ) : (
+                    ['openai', 'mistral', 'qwen', 'llama'].map((modelName) => (
+                      <button
+                        key={modelName}
+                        onClick={() => {
+                          setSelectedModel(modelName);
+                          setIsModelDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                      >
+                        <span className="truncate uppercase">{modelName}</span>
+                        {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* User Avatar + Dropdown */}
-          <div className="relative group">
-            <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/80 rounded-xl p-1.5 pr-3 hover:border-zinc-700 transition-all cursor-pointer">
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsUserDropdownOpen(!isUserDropdownOpen);
+                setIsModelDropdownOpen(false);
+              }}
+              className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/80 rounded-xl p-1.5 pr-3 hover:border-zinc-700 transition-all cursor-pointer outline-none focus:outline-none"
+            >
               <img
                 src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
                 alt="Avatar"
@@ -838,47 +917,58 @@ export default function App() {
                 <span className="text-[9px] text-zinc-500 font-semibold truncate max-w-[100px]">{userData.email}</span>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-            </div>
+            </button>
             
-            <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1.5 overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-800/60 mb-1 flex items-center gap-3">
-                <img
-                  src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
-                  alt="Avatar"
-                  className="w-9 h-9 rounded-lg object-cover ring-1 ring-zinc-700/60"
+            {isUserDropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                  onClick={() => setIsUserDropdownOpen(false)}
                 />
-                <div className="flex flex-col text-left overflow-hidden">
-                  <span className="text-xs font-black text-white truncate">{userData.name || 'Creator'}</span>
-                  <span className="text-[10px] text-zinc-400 font-bold truncate">{userData.email}</span>
-                  {userData.role === 'admin' && (
-                    <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[8px] font-black uppercase tracking-wider w-max">
-                      <ShieldAlert className="w-2 h-2" /> Administrator
-                    </span>
+                <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-4 py-2 border-b border-zinc-800/60 mb-1 flex items-center gap-3">
+                    <img
+                      src={userData.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${userData.email}`}
+                      alt="Avatar"
+                      className="w-9 h-9 rounded-lg object-cover ring-1 ring-zinc-700/60"
+                    />
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-xs font-black text-white truncate">{userData.name || 'Creator'}</span>
+                      <span className="text-[10px] text-zinc-400 font-bold truncate">{userData.email}</span>
+                      {userData.role?.toLowerCase() === 'admin' && (
+                        <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[8px] font-black uppercase tracking-wider w-max">
+                          <ShieldAlert className="w-2 h-2" /> Administrator
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {userData.role?.toLowerCase() === 'admin' && (
+                    <button
+                      onClick={() => {
+                        setIsAdminOpen(true);
+                        setIsUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors hover:bg-zinc-800 flex items-center gap-2"
+                    >
+                      <ShieldAlert className="w-4 h-4 text-orange-500" />
+                      Panel Admin
+                    </button>
                   )}
+
+                  <button
+                    onClick={() => {
+                      logout();
+                      window.location.reload();
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:text-red-400 transition-colors hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800/60 mt-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Keluar Sesi
+                  </button>
                 </div>
-              </div>
-
-              {userData.role === 'admin' && (
-                <button
-                  onClick={() => setIsAdminOpen(true)}
-                  className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors hover:bg-zinc-800 flex items-center gap-2"
-                >
-                  <ShieldAlert className="w-4 h-4 text-orange-500" />
-                  Panel Admin
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  logout();
-                  window.location.reload();
-                }}
-                className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:text-red-400 transition-colors hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800/60 mt-1"
-              >
-                <LogOut className="w-4 h-4" />
-                Keluar Sesi
-              </button>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -919,31 +1009,45 @@ export default function App() {
           <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-950">
             <div className="flex items-center gap-2 text-red-500">
               <svg className="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path></svg>
-              <h2 className="font-bold text-sm sm:text-base tracking-wide text-white uppercase">Panduan Menggunakan AI Command Center</h2>
+              <h2 className="font-bold text-sm sm:text-base tracking-wide text-white uppercase">Panduan Autopilot AI Commander</h2>
             </div>
             <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-white text-sm bg-zinc-900 border border-zinc-800 w-8 h-8 rounded-full flex items-center justify-center transition-all">✕</button>
           </div>
           <div className="p-6 overflow-y-auto space-y-6 text-sm text-zinc-300 leading-relaxed">
              <p>
-                Gunakan <strong className="text-white">YouTube Creator AI Command Center</strong> ini dengan sederhana agar Anda bisa langsung menggunakannya untuk melejitkan channel Anda!
+                Gunakan <strong className="text-white">Autopilot AI Commander</strong> ini dengan sederhana agar Anda bisa langsung menggunakannya untuk melejitkan channel Anda!
             </p>
             <p className="bg-red-950/20 border border-red-900/40 rounded-xl p-3 text-xs sm:text-sm text-zinc-400">
-                Secara singkat, aplikasi ini adalah <strong className="text-red-400 font-bold">lembar kerja interaktif</strong> yang menggabungkan 10 aturan sukses dari gambar yang Anda unggah dengan kecerdasan buatan (AI) Gemini.
+                Secara singkat, aplikasi ini adalah <strong className="text-red-400 font-bold">lembar kerja interaktif autopilot</strong> yang menggabungkan 10 aturan sukses dari gambar yang Anda unggah dengan kecerdasan buatan (AI) Gemini & Pollinations secara real-time.
             </p>
             <h3 className="font-black text-white uppercase tracking-wider text-xs text-red-500">Berikut adalah panduan langkah demi langkah cara menggunakannya:</h3>
             
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
                 <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">1</div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Masukkan Topik Channel Anda</h4>
-                    <p className="text-xs text-zinc-400">Di bagian paling atas halaman (Header), terdapat kolom pengisian topik utama Anda.</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Masukkan Topik & Set Parameter Konteks</h4>
+                    <p className="text-xs text-zinc-400">Tentukan topik utama channel Anda di kolom header, lalu sesuaikan Bahasa Output AI, Estetika Visual, dan Panjang Skrip Target pada card Parameter Konteks Saluran.</p>
                 </div>
             </div>
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
                 <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">2</div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Pilih Aturan & Eksekusi</h4>
-                    <p className="text-xs text-zinc-400">Klik pada 10 aturan untuk membuka panel AI dan menyesuaikan parameter hasil Anda yang sangat spesifik.</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Pilih Model AI Secara Dinamis</h4>
+                    <p className="text-xs text-zinc-400">Di sudut kanan atas navigasi, klik model dropdown untuk memilih secara dinamis model AI teks (seperti OpenAI, Mistral, Qwen, dll.) yang dimuat real-time dari endpoint resmi Pollinations AI.</p>
+                </div>
+            </div>
+            <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
+                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">3</div>
+                <div className="space-y-1">
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Jalankan Autopilot atau Modular AI</h4>
+                    <p className="text-xs text-zinc-400">Klik "Jalankan Analisis AI" pada setiap 10 aturan emas untuk memproses strategi dan naskah secara khusus, atau klik "Jalankan Autopilot" di bagian atas untuk memproses semua 10 langkah emas secara otomatis berurutan!</p>
+                </div>
+            </div>
+            <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
+                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">4</div>
+                <div className="space-y-1">
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Unduh Panduan Lengkap</h4>
+                    <p className="text-xs text-zinc-400">Setelah semua langkah selesai atau diproses, klik tombol "Unduh Panduan" untuk mengekspor draf komprehensif Anda dalam format Markdown (.md) yang rapi.</p>
                 </div>
             </div>
           </div>
@@ -971,7 +1075,7 @@ export default function App() {
               </button>
           </div>
           <h1 className="text-4xl md:text-6xl impact-font uppercase tracking-tight text-white leading-none">
-              YOUTUBE CREATOR <span className="text-red-600 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">AI COMMAND CENTER</span>
+              AUTOPILOT <span className="text-red-600 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">AI COMMANDER</span>
           </h1>
           <h2 className="text-lg md:text-xl text-zinc-400 font-semibold mt-2">
               Asisten yang Bantu Tembus 100K Subscribers Pertama Anda
@@ -1006,7 +1110,8 @@ export default function App() {
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                   <button onClick={suggestTopicAI} disabled={topic === 'Menggali ide dari AI...'} className="bg-zinc-800 hover:bg-zinc-700 text-yellow-500/90 font-bold text-xs px-4 py-3 rounded-xl transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2">
-                    <Lightbulb className="w-4 h-4" /> <span className="hidden sm:inline">Temukan Ide Niche</span>
+                    {topic === 'Menggali ide dari AI...' ? <Loader2 className="w-4 h-4 animate-spin text-yellow-500" /> : <Lightbulb className="w-4 h-4" />}
+                    <span className="hidden sm:inline">Temukan Ide Niche</span>
                   </button>
                   <input 
                     type="text" 
@@ -1015,10 +1120,58 @@ export default function App() {
                     placeholder="Contoh: Street Food Nusantara, Review Gadget Pemula..." 
                     className={`bg-zinc-950 border ${isTopicUnsaved ? 'border-yellow-500/50 focus:ring-yellow-500' : 'border-zinc-800 focus:ring-red-500'} rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:border-transparent flex-1 placeholder:text-zinc-600`} 
                   />
-                  <button onClick={saveGlobalTopic} className={`bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition-all shadow-lg active:scale-95 shrink-0 ${isTopicUnsaved ? 'animate-pulse ring-2 ring-yellow-500 ring-offset-2 ring-offset-zinc-900' : ''}`}>
+                  <button onClick={saveGlobalTopic} className={`bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2 ${isTopicUnsaved ? 'ring-2 ring-yellow-500/50 ring-offset-2 ring-offset-zinc-900' : ''}`}>
+                    {isTopicUnsaved && <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />}
                     {globalTopic && isTopicUnsaved ? 'Perbarui Topik' : 'Set Topik Utama'}
                   </button>
               </div>
+
+              {/* Parameter Konteks Saluran */}
+              <div className="mt-5 border-t border-zinc-800/80 pt-4 text-left">
+                <span className="text-[10px] font-black uppercase text-red-500 tracking-widest block mb-3">⚙️ PARAMETER KONTEKS SALURAN (DIVERSIFIKASI PRODUKSI)</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Bahasa Output AI</label>
+                    <select
+                      value={outputLanguage}
+                      onChange={(e) => setOutputLanguage(e.target.value)}
+                      className="w-full bg-zinc-950/80 border border-zinc-800 text-xs text-white rounded-xl p-2.5 focus:ring-1 focus:ring-red-500 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="Bahasa Indonesia (Santai/Gaul)">Bahasa Indonesia (Santai/Gaul)</option>
+                      <option value="Bahasa Indonesia (Formal/Edukasi)">Bahasa Indonesia (Formal/Edukasi)</option>
+                      <option value="Bahasa Inggris (Global/Internasional)">Bahasa Inggris (Global/Internasional)</option>
+                      <option value="Bilingual (Campuran Indonesia-Inggris)">Bilingual (Campuran Indonesia-Inggris)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Gaya & Estetika Visual</label>
+                    <select
+                      value={visualStyle}
+                      onChange={(e) => setVisualStyle(e.target.value)}
+                      className="w-full bg-zinc-950/80 border border-zinc-800 text-xs text-white rounded-xl p-2.5 focus:ring-1 focus:ring-red-500 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="B-Roll Cepat & Dinamis">B-Roll Cepat & Dinamis</option>
+                      <option value="Sinematik Lambat & Estetis">Sinematik Lambat & Estetis</option>
+                      <option value="Minimalis & Grafis Bergerak">Minimalis & Grafis Bergerak</option>
+                      <option value="Kamera Wajah Langsung (Talking Head)">Talking Head (Kamera Wajah)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Panjang Skrip Target</label>
+                    <select
+                      value={skripLength}
+                      onChange={(e) => setSkripLength(e.target.value)}
+                      className="w-full bg-zinc-950/80 border border-zinc-800 text-xs text-white rounded-xl p-2.5 focus:ring-1 focus:ring-red-500 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="Skrip Sangat Singkat (YouTube Shorts/Reels, &lt;1 Menit)">YouTube Shorts (&lt; 1 Menit)</option>
+                      <option value="Skrip Pendek & Padat (3-5 Menit)">Skrip Pendek (3-5 Menit)</option>
+                      <option value="Skrip Sedang (8-12 Menit)">Skrip Sedang (8-12 Menit)</option>
+                      <option value="Skrip Mendalam / Video Essay (&gt;15 Menit)">Video Essay (&gt; 15 Menit)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {isTopicUnsaved && globalTopic && (
                 <div className="mt-3 text-left flex items-start flex-col sm:flex-row gap-2 text-yellow-500 bg-yellow-500/10 p-3 rounded-xl border border-yellow-500/20">
                   <div className="flex items-center gap-2 shrink-0">

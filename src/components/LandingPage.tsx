@@ -7,6 +7,9 @@ import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [regUser, setRegUser] = useState<{ email: string; name: string; picture: string } | null>(null);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -17,7 +20,18 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         onLoginSuccess();
       } catch (err: any) {
         console.error(err);
-        setErrorMsg(err.message || 'Gagal login. Hubungi Admin.');
+        if (err.email) {
+          setRegUser({
+            email: err.email,
+            name: err.name || '',
+            picture: err.picture || ''
+          });
+          setRegName(err.name || '');
+          setRegEmail(err.email || '');
+          setErrorMsg('');
+        } else {
+          setErrorMsg(err.message || 'Gagal login. Hubungi Admin.');
+        }
       } finally {
         setLoading(false);
       }
@@ -39,7 +53,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <Play className="w-4 h-4 text-white fill-current" />
           </div>
           <span className="font-black text-xl tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-            Autopilot AI Command Center.
+            Autopilot AI Commander
           </span>
         </div>
         <button 
@@ -61,7 +75,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
           Sistem Autopilot untuk <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">
-             Kreator YouTube.
+             Autopilot AI Commander
           </span>
         </h1>
         
@@ -82,7 +96,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             login();
           }}
           disabled={loading}
-          className="group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100"
+          className="group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100 mb-4"
         >
           {loading ? (
              <Loader2 className="w-6 h-6 animate-spin text-black" />
@@ -92,6 +106,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           {loading ? 'Menghubungkan...' : 'Masuk / Daftar App'}
           {!loading && <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:text-black transition-colors" />}
         </button>
+
         <p className="mt-4 text-xs text-zinc-600 mb-4">Akses hanya untuk pengguna terdaftar (Cloudflare D1 Allowlist)</p>
         
         {(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))) && (
@@ -167,6 +182,93 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} CreatorBlueprint. Built with AI Studio.</p>
         </div>
       </footer>
+
+      {/* Modal Pendaftaran QRIS */}
+      {regUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
+          <div className="relative w-full max-w-lg bg-zinc-950/90 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_-5px_rgba(239,68,68,0.15)] flex flex-col items-center">
+            {/* Header */}
+            <div className="w-12 h-12 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center mb-4">
+              <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
+            </div>
+            
+            <h3 className="text-xl sm:text-2xl font-black text-white text-center tracking-tight mb-2">
+              Pendaftaran Autopilot AI Commander
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-zinc-400 text-center font-light mb-6 leading-relaxed max-w-md">
+              Email Google Anda belum terdaftar di sistem kami. Dapatkan akses <span className="text-red-400 font-bold">Lifetime</span> ke seluruh 10+ alat AI taktis, riset mikro-niche, draf skrip, dan mode autopilot seharga <span className="text-white font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">Rp 69.000</span> sekali bayar.
+            </p>
+
+            {/* Form */}
+            <div className="w-full space-y-4 mb-6 text-left">
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Nama Lengkap (Sesuai Akun):</label>
+                <input 
+                  type="text" 
+                  value={regName} 
+                  onChange={e => setRegName(e.target.value)} 
+                  className="w-full bg-zinc-900/80 border border-zinc-800 text-sm text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-zinc-600"
+                  placeholder="Nama Lengkap Anda"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Email yang Didaftarkan:</label>
+                <input 
+                  type="email" 
+                  value={regEmail} 
+                  onChange={e => setRegEmail(e.target.value)} 
+                  className="w-full bg-zinc-900/80 border border-zinc-800 text-sm text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-zinc-650"
+                  placeholder="name@email.com"
+                />
+              </div>
+            </div>
+
+            {/* QRIS Code Box */}
+            <div className="relative group bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-2xl flex flex-col items-center mb-6 shadow-inner w-full max-w-[280px]">
+              <div className="absolute inset-0 bg-gradient-to-tr from-red-500/5 to-transparent rounded-2xl -z-10 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="bg-white p-2.5 rounded-xl shadow-lg border border-zinc-200">
+                <img 
+                  src="/qris.png" 
+                  alt="QRIS Pembayaran 69K" 
+                  className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://placehold.co/200x200?text=QRIS+69K";
+                  }}
+                />
+              </div>
+              
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-3">
+                Pindai dengan Aplikasi M-Banking / E-Wallet
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="w-full grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setRegUser(null)}
+                className="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 font-bold py-3 px-4 rounded-xl text-sm transition-all active:scale-95"
+              >
+                Batal
+              </button>
+              
+              <button
+                onClick={() => {
+                  const msg = `Halo Admin, saya ingin mendaftar Autopilot AI Commander dengan detail berikut:\n\n*Nama:* ${regName}\n*Email:* ${regEmail}\n*Biaya:* Rp69.000 (Lifetime)\n\nBerikut saya lampirkan bukti pembayaran QRIS saya. Tolong segera aktifkan akun saya ya, terima kasih!`;
+                  const encodedMsg = encodeURIComponent(msg);
+                  window.open(`https://wa.me/6281234567890?text=${encodedMsg}`, '_blank');
+                }}
+                disabled={!regName || !regEmail}
+                className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-lg shadow-red-600/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              >
+                Konfirmasi WA
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
