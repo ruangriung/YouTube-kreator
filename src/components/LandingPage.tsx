@@ -235,6 +235,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       <footer className="w-full py-8 border-t border-zinc-900 z-10">
         <div className="max-w-7xl mx-auto px-6 text-center space-y-4">
           <div className="text-zinc-500 text-xs flex items-center justify-center gap-4">
+            <Link to="/about" className="hover:text-red-500 transition-colors">About Us</Link>
+            <span>&bull;</span>
             <Link to="/privacy-policy" className="hover:text-red-500 transition-colors">Privacy Policy</Link>
             <span>&bull;</span>
             <Link to="/terms-of-service" className="hover:text-red-500 transition-colors">Terms of Service</Link>
