@@ -34,7 +34,7 @@ export default function About() {
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-red-500/40 flex-shrink-0">
                 <img 
                   src="/assets/arekgresikID.jpg" 
-                  alt="Arek Gresik" 
+                  alt="Arif Tirtana" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.src = "https://api.dicebear.com/7.x/bottts/svg?seed=arekgresik";
@@ -42,8 +42,9 @@ export default function About() {
                 />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Karya Kreatif Arek Gresik</h3>
-                <p className="text-xs text-zinc-500">Dibuat dengan sepenuh hati ❤️</p>
+                <h3 className="text-lg font-black text-white">Arif Tirtana</h3>
+                <p className="text-xs text-red-500 font-bold">UI/UX Designer &amp; Full Stack Web Developer</p>
+                <p className="text-xs text-zinc-400 mt-0.5">Kreator &amp; Pengembang Utama Auto Pilot AI Commander</p>
               </div>
             </div>
             
