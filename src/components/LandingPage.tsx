@@ -279,7 +279,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <span>&bull;</span>
             <Link to="/terms-of-service" className="hover:text-red-500 transition-colors">Terms of Service</Link>
           </div>
-          <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} Auto Pilot AI Commander. Didesain oleh Arek Gresik.</p>
+          <p className="text-zinc-600 text-xs">&copy; {new Date().getFullYear()} Auto Pilot AI Commander - <a href="https://kreatorautopilot.my.id" target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors">kreatorautopilot.my.id</a>. Didesain oleh Arek Gresik.</p>
         </div>
       </footer>
 
