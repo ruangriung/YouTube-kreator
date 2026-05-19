@@ -67,7 +67,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
     onError: () => {
       setErrorMsg('Login digagalkan');
       setLoading(false);
-    }
+    },
+    prompt: 'select_account'
   });
 
   return (
