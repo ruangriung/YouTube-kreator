@@ -924,35 +924,38 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
                   <div className="px-3.5 py-1.5 border-b border-zinc-800/60 mb-1">
                     <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Pilih Model AI Teks</span>
                   </div>
-                  {models.length > 0 ? (
-                    models.map((modelName) => (
-                      <button
-                        key={modelName}
-                        onClick={() => {
-                          setSelectedModel(modelName);
-                          setIsModelDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
-                      >
-                        <span className="truncate uppercase">{modelName}</span>
-                        {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
-                      </button>
-                    ))
-                  ) : (
-                    ['openai', 'mistral', 'qwen', 'llama'].map((modelName) => (
-                      <button
-                        key={modelName}
-                        onClick={() => {
-                          setSelectedModel(modelName);
-                          setIsModelDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
-                      >
-                        <span className="truncate uppercase">{modelName}</span>
-                        {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
-                      </button>
-                    ))
-                  )}
+                  
+                  <div className="max-h-[260px] overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full">
+                    {models.length > 0 ? (
+                      models.map((modelName) => (
+                        <button
+                          key={modelName}
+                          onClick={() => {
+                            setSelectedModel(modelName);
+                            setIsModelDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                        >
+                          <span className="truncate uppercase">{modelName}</span>
+                          {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                        </button>
+                      ))
+                    ) : (
+                      ['openai', 'mistral', 'qwen', 'llama'].map((modelName) => (
+                        <button
+                          key={modelName}
+                          onClick={() => {
+                            setSelectedModel(modelName);
+                            setIsModelDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors hover:bg-zinc-800 flex items-center justify-between ${selectedModel === modelName ? 'text-red-500 bg-red-500/5' : 'text-zinc-300'}`}
+                        >
+                          <span className="truncate uppercase">{modelName}</span>
+                          {selectedModel === modelName && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               </>
             )}
