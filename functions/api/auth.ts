@@ -1,3 +1,13 @@
+function isLocalRequest(request: any): boolean {
+  const url = new URL(request.url);
+  return (
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.hostname.startsWith('192.168.') ||
+    url.hostname === '0.0.0.0'
+  );
+}
+
 export async function onRequest(context: any) {
   const { request, env } = context;
   if (request.method !== 'POST') {
@@ -12,7 +22,7 @@ export async function onRequest(context: any) {
 
     // Ambil info user dari Google atau bypass lokal
     let user: any;
-    if (accessToken === 'local_dev_token') {
+    if (accessToken === 'local_dev_token' && isLocalRequest(request)) {
       user = {
         email: 'developer@local.dev',
         name: 'Local Developer',

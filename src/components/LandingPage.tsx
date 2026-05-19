@@ -92,7 +92,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 z-10 max-w-5xl mx-auto">
+      <main className="flex-1 flex flex-col items-center justify-start text-center px-6 pt-6 md:pt-10 pb-24 z-10 max-w-5xl mx-auto">
         {/* Interactive Mode Selectors */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 p-1 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 mb-8 max-w-md w-full">
           <button
