@@ -7,6 +7,6 @@ binding = "DB"
 database_name = "creator-db"
 database_id = "ba9d3721-9604-46ef-9efc-9a3b1dc92550"
 
-[vars]
-VITE_GOOGLE_CLIENT_ID = "817019409612-gq22og7r170fkd7fi3o8ujvmb6omcjvg.apps.googleusercontent.com"
-VITE_POLLINATIONS_API_KEY = "sk_czS8xsb07mIxDKR8YPoO9xQWmAa6vbPZ"
+# [vars]
+# VITE_GOOGLE_CLIENT_ID = "817019409612-gq22og7r170fkd7fi3o8ujvmb6omcjvg.apps.googleusercontent.com"
+# VITE_POLLINATIONS_API_KEY = "sk_czS8xsb07mIxDKR8YPoO9xQWmAa6vbPZ"
