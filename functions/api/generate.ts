@@ -54,7 +54,7 @@ export async function onRequest(context: any) {
 
   // 3. Parse input params for AI call
   try {
-    const { prompt, systemInstruction, model = 'openai' } = await request.json();
+    const { prompt, systemInstruction, model = 'openai', type = 'text' } = await request.json();
     if (!prompt) {
       return new Response('Missing prompt', { status: 400 });
     }
@@ -62,6 +62,37 @@ export async function onRequest(context: any) {
     // 4. Securely read API Key purely on backend
     const apiKey = env.VITE_POLLINATIONS_API_KEY || '';
     const cleanApiKey = apiKey.trim().replace(/^['"]|['"]$/g, '');
+
+    if (type === 'image') {
+      const encodedPrompt = encodeURIComponent(prompt);
+      const imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      const aiResponse = await fetch(imageUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${cleanApiKey}`
+        }
+      });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.text().catch(() => '');
+        return new Response(
+          JSON.stringify({ error: errorData || `Image API Error: ${aiResponse.status}` }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = aiResponse.headers.get('Content-Type') || 'image/png';
+      const buffer = await aiResponse.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += 1) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      return new Response(JSON.stringify({ imageBase64: `data:${contentType};base64,${base64}` }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const messages: any[] = [];
     if (systemInstruction) {

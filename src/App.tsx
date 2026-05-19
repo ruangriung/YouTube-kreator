@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { callPollinationsAI } from './lib/pollinations';
+import { callPollinationsAI, callPollinationsImage } from './lib/pollinations';
 import { Lightbulb, BookOpen, RotateCcw, BrainCircuit, Sparkles, Brain, Filter, ArrowUpDown, Palette, CheckCircle2, Download, Loader2, Cpu, ChevronDown, LogOut, ShieldAlert, Play } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Cell } from 'recharts';
 import { initAuth, getAccessToken, logout } from './lib/auth';
@@ -379,6 +379,11 @@ export default function App() {
   const [activePreview, setActivePreview] = useState<'A' | 'B'>('A');
   const [simulatingCTR, setSimulatingCTR] = useState(false);
   const [ctrResult, setCtrResult] = useState<any>(null);
+  const [imagePrompt, setImagePrompt] = useState('Thumbnail epik dengan gaya cinematic premium');
+  const [imageModel, setImageModel] = useState('flux');
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageResult, setImageResult] = useState<string | null>(null);
+  const [imageError, setImageError] = useState('');
 
   useEffect(() => {
     localStorage.setItem('ytBuilder_outputLanguage', outputLanguage);
@@ -631,6 +636,26 @@ PENTING: Berikan ide niche/topik yang sangat unik, tidak biasa, jarang terpikirk
     } catch (error) {
         setTopic("");
         showToast("Gagal mendapatkan ide topik.");
+    }
+  };
+
+  const generateImage = async () => {
+    if (!imagePrompt.trim()) {
+      setImageError('Silakan isi prompt gambar terlebih dahulu.');
+      return;
+    }
+    setImageLoading(true);
+    setImageError('');
+    setImageResult(null);
+
+    try {
+      const imageData = await callPollinationsImage(imagePrompt, imageModel);
+      setImageResult(imageData);
+    } catch (err: any) {
+      console.error(err);
+      setImageError(err.message || 'Gagal membuat gambar. Coba lagi.');
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -1506,6 +1531,87 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
               </div>
             </div>
           )}
+        </div>
+
+        {/* Image Generator Card */}
+        <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-zinc-800/80 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-emerald-500/10 border border-emerald-500/25 p-2 rounded-xl text-emerald-500 shrink-0">
+                <Palette className="w-5 h-5 animate-pulse" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Image Generator</h3>
+                <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Buat thumbnail atau visual brand dengan Pollinations Image API langsung dari dashboard.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Prompt Gambar</label>
+                <textarea
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  rows={4}
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 text-xs text-white rounded-2xl px-4 py-3 outline-none transition-all"
+                  placeholder="Contoh: Thumbnail cinematic premium dengan teks merah neon dan karakter dinamis..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Model Gambar</label>
+                  <select
+                    value={imageModel}
+                    onChange={(e) => setImageModel(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-xl px-4 py-3 focus:ring-1 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
+                  >
+                    <option value="flux">flux</option>
+                    <option value="stable">stable</option>
+                    <option value="openai">openai</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={generateImage}
+                    disabled={imageLoading}
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {imageLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Mengenerate Gambar...</>
+                    ) : (
+                      'Generate Image'
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {imageError && (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">{imageError}</div>
+              )}
+            </div>
+
+            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl min-h-[280px] flex flex-col items-center justify-center p-4 text-center">
+              {imageResult ? (
+                <div className="space-y-4 w-full">
+                  <img src={imageResult} alt="Generated" className="mx-auto rounded-3xl max-h-[320px] w-full object-contain border border-zinc-800" />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(imagePrompt);
+                      showToast('Prompt gambar berhasil disalin!');
+                    }}
+                    className="w-full bg-zinc-900/80 text-zinc-200 text-[10px] uppercase tracking-widest font-bold px-4 py-3 rounded-2xl transition-all hover:bg-zinc-800"
+                  >Salin Prompt</button>
+                </div>
+              ) : (
+                <div className="text-zinc-500 text-xs leading-relaxed">
+                  Masukkan prompt gambar di sebelah kiri lalu klik Generate Image untuk membuat visual AI yang relevan dengan channel Anda.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 gap-4 shadow-xl">

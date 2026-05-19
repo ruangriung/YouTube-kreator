@@ -265,9 +265,56 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
               </p>
             </div>
           </div>
+
+          <div className="mt-14 text-center">
+            <h3 className="text-3xl font-black tracking-tight mb-6">Pilih Paket Langganan yang Tepat untuk Kreator Anda</h3>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-red-500/40 transition-all">
+                <span className="text-xs uppercase tracking-[.3em] text-zinc-500">Starter</span>
+                <div className="mt-5 flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-white">Rp59.000</span>
+                  <span className="text-xs text-zinc-500">/bulan</span>
+                </div>
+                <p className="text-zinc-400 mt-3 text-sm">Akses dasar AI untuk riset niche, ide hook, dan dashboard konten ringan.</p>
+                <ul className="mt-6 space-y-3 text-sm text-zinc-400">
+                  <li>Analisis ide 3x per minggu</li>
+                  <li>Ide thumbnail + hook</li>
+                  <li>Preferensi gaya visual</li>
+                </ul>
+                <button className="mt-6 w-full bg-white text-black font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Starter</button>
+              </div>
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-red-600/90 to-red-700/90 border border-red-500/50 shadow-lg shadow-red-500/10 text-white">
+                <span className="text-xs uppercase tracking-[.3em] text-red-100">Pro</span>
+                <div className="mt-5 flex items-baseline gap-2">
+                  <span className="text-4xl font-black">Rp149.000</span>
+                  <span className="text-xs text-red-200">/bulan</span>
+                </div>
+                <p className="mt-3 text-sm text-red-100">Semua fitur Starter plus dashboard Autopilot, generator gambar AI, dan riset konten lengkap.</p>
+                <ul className="mt-6 space-y-3 text-sm text-red-100">
+                  <li>10 aturan sukses + autopilot</li>
+                  <li>Generator gambar AI</li>
+                  <li>Strategi thumbnail & skrip lanjutan</li>
+                </ul>
+                <button className="mt-6 w-full bg-white text-red-700 font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Pro</button>
+              </div>
+              <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 hover:border-emerald-500/40 transition-all">
+                <span className="text-xs uppercase tracking-[.3em] text-zinc-500">Lifetime</span>
+                <div className="mt-5 flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-white">Rp599.000</span>
+                  <span className="text-xs text-zinc-500">Sekali bayar</span>
+                </div>
+                <p className="text-zinc-400 mt-3 text-sm">Akses penuh seumur hidup untuk seluruh alur kerja kreator, update fitur, dan dukungan prioritas.</p>
+                <ul className="mt-6 space-y-3 text-sm text-zinc-400">
+                  <li>Akses permanen tanpa batas</li>
+                  <li>Update fitur otomatis</li>
+                  <li>Support prioritas</li>
+                </ul>
+                <button className="mt-6 w-full bg-white text-black font-bold py-3 rounded-2xl hover:bg-zinc-100 transition-all">Pilih Lifetime</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
 
 
       {/* Footer */}
