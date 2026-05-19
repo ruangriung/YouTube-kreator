@@ -10,6 +10,32 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
   const [regUser, setRegUser] = useState<{ email: string; name: string; picture: string } | null>(null);
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [selectedMode, setSelectedMode] = useState<'kreator' | 'riset' | 'skrip'>('kreator');
+
+  const modeContent = {
+    kreator: {
+      tag: "didukung oleh sistem ai autopilot tingkat lanjut",
+      headline: "Konten Kreator",
+      gradient: "from-red-500 to-red-800",
+      description: "Ubah ide acak menjadi rencana konten taktis secara instan. Riset niche mendalam, formula hook viral, storyboard visual, hingga draf skrip video siap pakai—semuanya digenerate AI secara autopilot.",
+      border: "border-red-500/20 text-red-400 bg-red-500/5",
+    },
+    riset: {
+      tag: "mode riset niche & pembongkar kompetitor",
+      headline: "Riset Niche AI",
+      gradient: "from-purple-500 to-indigo-600",
+      description: "Temukan segmen audiens mikro yang paling menguntungkan, bedah performa video kompetitor teratas secara detail, serta identifikasi celah tren pasar yang belum tersentuh secara otomatis.",
+      border: "border-purple-500/20 text-purple-400 bg-purple-500/5",
+    },
+    skrip: {
+      tag: "mode formula hook & storyboard visual",
+      headline: "Skrip & Hook AI",
+      gradient: "from-amber-500 to-orange-600",
+      description: "Susun kalimat pancingan 3 detik pertama yang adiktif dengan gaya natural human speaking, lengkap dengan adegan visual detik demi detik serta transisi musik pembangun emosi.",
+      border: "border-amber-500/20 text-amber-400 bg-amber-500/5",
+    }
+  };
+
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -67,20 +93,56 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 z-10 max-w-5xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-red-400 mb-8 lowercase tracking-wide">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>didukung oleh sistem ai autopilot tingkat lanjut</span>
+        {/* Interactive Mode Selectors */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 p-1 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 mb-8 max-w-md w-full">
+          <button
+            onClick={() => setSelectedMode('kreator')}
+            className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${
+              selectedMode === 'kreator'
+                ? 'bg-red-600 text-white shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)]'
+                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+            }`}
+          >
+            🎬 Kreator Mode
+          </button>
+          
+          <button
+            onClick={() => setSelectedMode('riset')}
+            className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${
+              selectedMode === 'riset'
+                ? 'bg-purple-600 text-white shadow-[0_0_15px_-3px_rgba(147,51,234,0.4)]'
+                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+            }`}
+          >
+            🔍 Riset Niche
+          </button>
+          
+          <button
+            onClick={() => setSelectedMode('skrip')}
+            className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${
+              selectedMode === 'skrip'
+                ? 'bg-amber-600 text-white shadow-[0_0_15px_-3px_rgba(217,119,6,0.4)]'
+                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+            }`}
+          >
+            📝 Hook & Skrip
+          </button>
+        </div>
+
+        <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider mb-6 transition-all duration-300 ${modeContent[selectedMode].border}`}>
+          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+          <span>{modeContent[selectedMode].tag}</span>
         </div>
         
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
           Sistem Autopilot untuk <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">
-             Autopilot AI Commander
+          <span className={`text-transparent bg-clip-text bg-gradient-to-r ${modeContent[selectedMode].gradient} transition-all duration-500`}>
+             {modeContent[selectedMode].headline}
           </span>
         </h1>
         
-        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl font-light mb-10 leading-relaxed">
-          Ubah ide acak menjadi rencana konten taktis secara instan. Riset niche mendalam, formula hook viral, storyboard visual, hingga draf skrip video siap pakai—semuanya digenerate AI secara autopilot.
+        <p className="text-zinc-400 text-base md:text-lg max-w-2xl font-light mb-10 leading-relaxed min-h-[70px] transition-all duration-300">
+          {modeContent[selectedMode].description}
         </p>
 
         {errorMsg && (
