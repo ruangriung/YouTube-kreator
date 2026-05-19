@@ -203,33 +203,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
         </div>
       </section>
 
-      {/* About Me Section */}
-      <section className="border-t border-zinc-900 bg-zinc-950/30 z-10 py-16">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-          <div className="relative group flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-800 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500"></div>
-            <img 
-              src="/assets/arekgresikID.jpg" 
-              alt="Designer arek Gresik" 
-              className="relative w-32 h-32 md:w-36 md:h-36 rounded-full object-cover ring-4 ring-zinc-800/80 group-hover:ring-red-500/50 transition-all duration-300 shadow-2xl"
-              onError={(e) => {
-                e.currentTarget.src = "https://api.dicebear.com/7.x/bottts/svg?seed=arekgresik";
-              }}
-            />
-          </div>
-          <div className="space-y-4 max-w-xl">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-wider">
-              Designer & Developer
-            </span>
-            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              Didesain oleh Arek Gresik 🇮🇩
-            </h3>
-            <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-light">
-              Hai! Produk ini dirancang dan dikembangkan dengan penuh dedikasi oleh **arek Gresik** asli untuk membantu para kreator Indonesia meraih kebebasan finansial dan melipatgandakan produktivitas konten mereka secara cerdas, taktis, dan autopilot.
-            </p>
-          </div>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="w-full py-8 border-t border-zinc-900 z-10">
@@ -301,8 +275,19 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                   }}
                 />
               </div>
+
+              <a 
+                href="/qris.png" 
+                download="QRIS_Autopilot_AI_Commander.png"
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-bold text-zinc-300 transition-all uppercase tracking-wider active:scale-95"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Unduh QRIS
+              </a>
               
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-3">
+              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-2.5">
                 Pindai dengan Aplikasi M-Banking / E-Wallet
               </span>
             </div>
