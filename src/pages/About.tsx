@@ -42,7 +42,7 @@ export default function About() {
                 />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Karya Kreatif Arek Gresik 🇮🇩</h3>
+                <h3 className="text-lg font-black text-white">Karya Kreatif Arek Gresik</h3>
                 <p className="text-xs text-zinc-500">Dibuat dengan sepenuh hati di Jawa Timur</p>
               </div>
             </div>

@@ -103,7 +103,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
             }`}
           >
-            🎬 Kreator Mode
+            Kreator Mode
           </button>
           
           <button
@@ -114,7 +114,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
             }`}
           >
-            🔍 Riset Niche
+            Riset Niche
           </button>
           
           <button
@@ -125,7 +125,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
             }`}
           >
-            📝 Hook & Skrip
+            Hook & Skrip
           </button>
         </div>
 
