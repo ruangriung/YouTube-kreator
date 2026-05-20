@@ -4,6 +4,18 @@ import { Sparkles, BrainCircuit, Rocket, Play, ChevronRight, Loader2, Target, Tv
 import { useGoogleLogin } from '@react-oauth/google';
 import { verifyAccount, verifyLocalDevAccount } from '../lib/auth';
 
+const isLocalHostname = (hostname: string) => {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local') ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
+  );
+};
+
 export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
@@ -197,7 +209,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           </div>
         </div>
 
-        {(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))) && (
+        {(typeof window !== 'undefined' && isLocalHostname(window.location.hostname)) && (
           <button
             onClick={async () => {
               setLoading(true);
@@ -227,11 +239,13 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-20 text-white">Didukung oleh ekosistem teknologi AI terbaik di dunia</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-            <div title="YouTube" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/youtube/FF0000" className="h-5" alt="YouTube" /><span className="font-bold text-[10px] text-white">YouTube</span></div>
-            <div title="Google AdSense" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/googleadsense/4285F4" className="h-5" alt="Google AdSense" /><span className="font-bold text-[10px] text-white">AdSense</span></div>
-            <div title="Meta" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/meta/0668E1" className="h-4" alt="Meta" /><span className="font-bold text-[10px] text-white">Meta</span></div>
+            <div title="nanobanana" className="flex items-center gap-2"><img src="/nanobanana.svg" className="h-5" alt="Nanobanana" /><span className="font-bold text-[10px] text-white">Nanobanana</span></div>
+            <div title="Meta" className="flex items-center gap-2"><img src="/meta.svg" className="h-4" alt="Meta" /><span className="font-bold text-[10px] text-white">Meta</span></div>
+            <div title="YouTube" className="flex items-center gap-2"><img src="/favicon.svg" className="h-5" alt="YouTube" /><span className="font-bold text-[10px] text-white">YouTube</span></div>
+            <div title="Google AdSense" className="flex items-center gap-2"><img src="/googleadsense.svg" className="h-5" alt="Google AdSense" /><span className="font-bold text-[10px] text-white">AdSense</span></div>
             <div title="Cloudflare" className="flex items-center"><img src="/logo-cloudflare-dark.svg" className="h-4" alt="Cloudflare" /></div>
             <div title="Google" className="flex items-center gap-2"><img src="/google-icon.svg" className="h-4" alt="Google" /><span className="font-bold text-[10px] text-white">Google</span></div>
+            <div title="Google Cloud" className="flex items-center gap-2"><img src="/gcp.svg" className="h-4.5" alt="Google Cloud" /><span className="font-bold text-[10px] text-white">Google Cloud</span></div>
             <div title="GitHub" className="flex items-center gap-2"><img src="/github.svg" className="h-5 invert" alt="GitHub" /><span className="font-bold text-[10px] text-white">GitHub</span></div>
             <div title="Antigravity" className="flex items-center gap-2"><img src="/antigravity.svg" className="h-6" alt="Antigravity" /><span className="font-bold text-[10px] text-white">Antigravity</span></div>
             <div title="DeepSeek" className="flex items-center"><img src="/deepseek.svg" className="h-6" alt="DeepSeek" /></div>
