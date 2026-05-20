@@ -68,7 +68,18 @@ export default function CompetitorAnalyzer({
       showToast("Analisis Video Kompetitor Selesai!");
     } catch (err: any) {
       console.error(err);
-      setCompetitorError(err.message || 'Terjadi kesalahan saat membedah video kompetitor. Pastikan video memiliki subtitle/CC aktif.');
+      let friendlyError = err.message || 'Terjadi kesalahan saat membedah video kompetitor.';
+      if (
+        friendlyError.includes('Transcript is disabled') || 
+        friendlyError.includes('No transcripts are available') || 
+        friendlyError.includes('disabled on this video') ||
+        friendlyError.includes('transcript') && friendlyError.includes('disable')
+      ) {
+        friendlyError = 'Video ini tidak memiliki subtitle/CC aktif di YouTube. Silakan gunakan video kompetitor lain yang memiliki subtitle/CC aktif (tombol CC menyala) agar AI dapat membaca dan membedah percakapan di dalamnya.';
+      } else if (friendlyError.includes('too many requests') || friendlyError.includes('429')) {
+        friendlyError = 'YouTube membatasi permintaan saat ini (Too Many Requests). Silakan coba lagi beberapa saat lagi atau gunakan tautan video lain.';
+      }
+      setCompetitorError(friendlyError);
     } finally {
       setAnalyzingCompetitor(false);
     }

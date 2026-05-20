@@ -4,6 +4,8 @@ function isLocalRequest(request: any): boolean {
   return (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '[::1]' ||
     hostname === '0.0.0.0' ||
     hostname.endsWith('.local') ||
     hostname.startsWith('192.168.') ||

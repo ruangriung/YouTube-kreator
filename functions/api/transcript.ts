@@ -1,11 +1,11 @@
-import { YoutubeTranscript } from 'youtube-transcript';
-
 function isLocalRequest(request: any): boolean {
   const url = new URL(request.url);
   const hostname = url.hostname;
   return (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '[::1]' ||
     hostname === '0.0.0.0' ||
     hostname.endsWith('.local') ||
     hostname.startsWith('192.168.') ||
@@ -22,30 +22,33 @@ function extractYoutubeId(url: string): string | null {
   
   try {
     const urlObj = new URL(trimmed);
-    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-      const v = urlObj.searchParams.get('v');
-      if (v && v.length === 11) return v;
-      
-      const pathSegments = urlObj.pathname.split('/');
-      if (urlObj.hostname === 'youtu.be' && pathSegments[1] && pathSegments[1].length === 11) {
-        return pathSegments[1];
+    const v = urlObj.searchParams.get('v');
+    if (v && v.length === 11) return v;
+    
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+    
+    if (urlObj.hostname === 'youtu.be' && pathSegments[0] && pathSegments[0].length === 11) {
+      return pathSegments[0];
+    }
+    
+    const specialPaths = ['shorts', 'live', 'embed', 'v'];
+    for (const path of specialPaths) {
+      const idx = pathSegments.indexOf(path);
+      if (idx !== -1 && pathSegments[idx + 1] && pathSegments[idx + 1].length === 11) {
+        return pathSegments[idx + 1];
       }
-      
-      const shortsIdx = pathSegments.indexOf('shorts');
-      if (shortsIdx !== -1 && pathSegments[shortsIdx + 1] && pathSegments[shortsIdx + 1].length === 11) {
-        return pathSegments[shortsIdx + 1];
-      }
-      
-      const embedIdx = pathSegments.indexOf('embed');
-      if (embedIdx !== -1 && pathSegments[embedIdx + 1] && pathSegments[embedIdx + 1].length === 11) {
-        return pathSegments[embedIdx + 1];
+    }
+    
+    for (const segment of pathSegments) {
+      if (segment.length === 11) {
+        return segment;
       }
     }
   } catch (e) {
     // Ignore URL parse error
   }
 
-  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
   const match = trimmed.match(regex);
   if (match && match[1]) {
     return match[1];
@@ -149,20 +152,57 @@ export async function onRequest(context: any) {
       });
     }
 
-    // Ambil transkrip menggunakan youtube-transcript
-    const segments = await YoutubeTranscript.fetchTranscript(videoId);
-    const concatenatedText = segments.map((s: any) => s.text).join(' ');
+    // Ambil API Key Supadata
+    const apiKey = env.VITE_SUPADATA_API_KEY || env.SUPADATA_API_KEY || '';
+    const cleanApiKey = apiKey.trim().replace(/^['"]|['"]$/g, '');
+
+    if (!cleanApiKey) {
+      return new Response(JSON.stringify({ 
+        error: 'Konfigurasi VITE_SUPADATA_API_KEY tidak ditemukan. Pastikan Anda telah menambahkannya di file .dev.vars (untuk lokal) atau Environment Variables di Dashboard Cloudflare Pages (untuk produksi).' 
+      }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Panggil Supadata API
+    const response = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': cleanApiKey
+      }
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      return new Response(JSON.stringify({ 
+        error: errData.message || `Gagal mengambil transkrip via Supadata API: ${response.statusText}` 
+      }), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const data: any = await response.json();
+    const segments = data.content || [];
+    
+    let concatenatedText = '';
+    if (typeof segments === 'string') {
+      concatenatedText = segments;
+    } else if (Array.isArray(segments)) {
+      concatenatedText = segments.map((s: any) => s.text).join(' ');
+    }
 
     return new Response(JSON.stringify({ 
       success: true,
       transcript: concatenatedText,
-      segments
+      segments: Array.isArray(segments) ? segments : []
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || 'Gagal mengambil transkrip video YouTube. Pastikan video memiliki subtitle/CC aktif.' }), {
+    return new Response(JSON.stringify({ error: err.message || 'Gagal mengambil transkrip video YouTube. Silakan coba lagi.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
