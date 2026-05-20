@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrainCircuit, Loader2, Cpu, Play } from 'lucide-react';
+import { BrainCircuit, Loader2, Cpu, Play, Info } from 'lucide-react';
 
 interface TitleSimulatorProps {
   globalTopic: string;
@@ -89,6 +89,12 @@ Berikan respons dalam format JSON persis seperti di bawah ini, tanpa teks pengan
           <div className="text-left">
             <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Title & CTR A/B Simulator</h3>
             <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Uji performa dan dapatkan rekomendasi psikologis pemicu klik judul video Anda secara real-time.</p>
+          </div>
+        </div>
+        <div className="group relative hidden sm:block">
+          <Info className="w-5 h-5 text-zinc-500 cursor-help hover:text-white transition-colors" />
+          <div className="absolute right-0 top-8 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-xs text-zinc-300 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 text-left">
+            <strong>Cara kerja:</strong> Masukkan 2 kandidat judul. AI akan menguji performa secara kognitif dan merekomendasikan judul dengan CTR (Click-Through Rate) tertinggi.
           </div>
         </div>
       </div>

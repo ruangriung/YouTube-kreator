@@ -6,30 +6,39 @@ import { initAuth, getAccessToken, logout } from './lib/auth';
 import LandingPage from './components/LandingPage';
 import AdminPanel from './components/AdminPanel';
 import TitleSimulator from './components/TitleSimulator';
+import ScriptGenerator from './components/ScriptGenerator';
+import SEOOptimizer from './components/SEOOptimizer';
 import ImageGenerator from './components/ImageGenerator';
 import CompetitorAnalyzer from './components/CompetitorAnalyzer';
 import VisualDissector from './components/VisualDissector';
 
 // Helper component for Section 6 visual CTR preview
-const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams: any }) => {
+const ThumbnailPreviewSection = ({ params, setParams, globalTopic }: { params: any; setParams: any; globalTopic: string }) => {
   const [loading, setLoading] = useState(false);
+  const [generatingIdea, setGeneratingIdea] = useState(false);
   const [generatedImg, setGeneratedImg] = useState<string | null>(null);
   const [showLayoutOverlay, setShowLayoutOverlay] = useState(true);
 
-  const getCuratedMockImage = () => {
-    if (params.warna?.includes("Kuning")) {
-      return "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop";
-    } else if (params.warna?.includes("Merah")) {
-      return "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&auto=format&fit=crop";
-    } else {
-      return "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=600&auto=format&fit=crop";
+  const handleGenerateIdea = async () => {
+    setGeneratingIdea(true);
+    try {
+      const prompt = `Diberikan topik YouTube: "${globalTopic || 'Konten Kreator'}". Tolong berikan ide Palet Warna (max 5 kata) dan Fokus Karakter/Emosi (max 5 kata) untuk Thumbnail YouTube ber-CTR tinggi. Pisahkan dengan tanda "|", contoh: "Merah Neon & Hitam | Ekspresi Terkejut Ekstrem". HANYA balas dengan format tersebut tanpa embel-embel.`;
+      const res = await callPollinationsAI(prompt, "You are a YouTube CTR expert. Respond ONLY with the requested format.", "openai");
+      if (res && res.includes("|")) {
+        const [warna, karakter] = res.split("|").map(s => s.trim());
+        setParams({ ...params, warna, karakter });
+      }
+    } catch (err) {
+      console.error("Gagal men-generate ide:", err);
+    } finally {
+      setGeneratingIdea(false);
     }
   };
 
   const handleGenerateVisual = async () => {
     setLoading(true);
     try {
-      const prompt = `A premium cinematic high-CTR YouTube thumbnail style design. Dark atmospheric background with bold glowing neon colors: ${params.warna}. Subject: ${params.karakter}. Clean composition, intense expression, high contrast lighting, award-winning gaming/tech YouTube thumbnail aesthetic.`;
+      const prompt = `A premium cinematic high-CTR YouTube thumbnail style design. Dark atmospheric background with bold glowing neon colors: ${params.warna || 'High contrast'}. Subject: ${params.karakter || 'Intense expression'}. Clean composition, intense expression, high contrast lighting, award-winning gaming/tech YouTube thumbnail aesthetic. No text.`;
       const url = await callPollinationsImage(prompt, 'flux', 1024, 576);
       if (url) {
         setGeneratedImg(url);
@@ -41,7 +50,7 @@ const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams
     }
   };
 
-  const currentImg = generatedImg || getCuratedMockImage();
+  const currentImg = generatedImg;
 
   return (
     <div className="mt-4 border-t border-zinc-800/85 pt-4 space-y-4 text-left">
@@ -66,11 +75,18 @@ const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams
       <div className="grid md:grid-cols-12 gap-4">
         {/* Visual Preview Panel */}
         <div className="md:col-span-7 relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 group min-h-[160px] flex items-center justify-center">
-          <img 
-            src={currentImg} 
-            alt="AI Thumbnail Preview" 
-            className="w-full h-full object-cover max-h-[220px] transition-transform duration-500 group-hover:scale-105" 
-          />
+          {currentImg ? (
+            <img 
+              src={currentImg} 
+              alt="AI Thumbnail Preview" 
+              className="w-full h-full object-cover max-h-[220px] transition-transform duration-500 group-hover:scale-105" 
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center p-6 text-center space-y-2 h-full min-h-[160px] bg-zinc-950">
+               <Palette className="w-8 h-8 text-zinc-700" />
+               <p className="text-[10px] text-zinc-500 max-w-[200px]">Klik "Generate Draf Visual AI" untuk merender sketsa gambar otomatis.</p>
+            </div>
+          )}
 
           {/* Rule of Thirds / Focal Layout Grid Overlay */}
           {showLayoutOverlay && (
@@ -127,15 +143,27 @@ const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGenerateVisual}
-            disabled={loading}
-            className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-pink-500/10 active:scale-95 flex items-center justify-center gap-1.5"
-          >
-            <Sparkles size={13} className="shrink-0" />
-            Generate Draf Visual AI Baru
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={handleGenerateIdea}
+              disabled={generatingIdea}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-[10px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              {generatingIdea ? <Loader2 className="w-4 h-4 animate-spin" /> : <BrainCircuit size={13} />}
+              Ide Warna & Fokus Otomatis
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGenerateVisual}
+              disabled={loading || generatingIdea}
+              className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 px-4 rounded-xl text-[10px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-pink-500/10 active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles size={13} />}
+              Generate Draf Visual AI Baru
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -145,8 +173,8 @@ const ThumbnailPreviewSection = ({ params, setParams }: { params: any; setParams
 const SECTIONS = [
   {
     id: 1,
-    title: "Pilih niche yang bisa kamu bahas setiap hari",
-    desc: "Mencari ide sub-niche mikro yang konsisten agar terhindar dari burnout.",
+    title: "Brainstorming Niche & Pemetaan Topik Abadi",
+    desc: "Langkah awal sebelum meriset kompetitor: brainstorming ide sub-niche mikro yang konsisten agar terhindar dari burnout.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
     category: 'Konten / Niche',
     defaultParams: { audiens: 'Pemula (Mulai dari Nol)', monetisasi: 'AdSense YouTube Semata' },
@@ -170,12 +198,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Kembangkan niche mikro dan target pasar spesifik untuk topik "${topic}". Target audiens adalah: ${params.audiens}. Model monetisasi utama adalah: ${params.monetisasi}. Tolong buatkan analisis kelayakan, 3 sub-niche mikro yang belum banyak digarap di Indonesia, dan draf judul dari 5 ide video pertama yang langsung bisa dikerjakan minggu ini. Berikan juga CONTOH NYATA seperti narasi pendek, ide gambaran thumbnail, caption, dan hook visual yang relevan.`
+    getPrompt: (topic, params) => `Kembangkan niche mikro dan target pasar spesifik untuk topik "${topic}". Target audiens adalah: ${params.audiens}. Model monetisasi utama adalah: ${params.monetisasi}. Tolong buatkan analisis kelayakan brainstorming, 3 sub-niche mikro yang belum banyak digarap di Indonesia, dan draf judul dari 5 ide video pertama yang langsung bisa dikerjakan minggu ini. Berikan juga CONTOH NYATA seperti narasi pendek, ide gambaran thumbnail, caption, dan hook visual yang relevan.`
   },
   {
     id: 2,
-    title: "Pelajari 50 video viral di niche kamu",
-    desc: "Menganalisis pola pemicu psikologis apa saja yang membuat video sejenis viral.",
+    title: "Brainstorming Psikologi Viral Kompetitor",
+    desc: "Gunakan 'Bedah Video Kompetitor' di atas, lalu brainstorming pola pemicu psikologis apa yang membuat video sejenis selalu viral.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>,
     category: 'Konten / Niche',
     defaultParams: { gaya: 'Dokumenter Kritis / Video Essay', durasi: 'Standar Efektif (8 - 12 Menit)' },
@@ -199,12 +227,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Saya memproduksi video dengan topik "${topic}" menggunakan gaya "${params.gaya}" and durasi "${params.durasi}". Bedah pola psikologi dari 3 tema video yang paling sering viral di niche ini. Berikan struktur narasi yang memancing interaksi komentar tinggi, emosi apa yang wajib dieksploitasi. Lengkapi juga dengan CONTOH NYATA hook kalimat, gaya pengeditan visual kasar, dan ide teks thumbnail yang terbukti bekerja di topik serupa.`
+    getPrompt: (topic, params) => `Saya memproduksi video dengan topik "${topic}" menggunakan gaya "${params.gaya}" and durasi "${params.durasi}". Bedah pola psikologi brainstorming dari 3 tema video yang paling sering viral di niche ini. Berikan struktur narasi yang memancing interaksi komentar tinggi, emosi apa yang wajib dieksploitasi. Lengkapi juga dengan CONTOH NYATA hook kalimat, gaya pengeditan visual kasar, dan ide teks thumbnail yang terbukti bekerja di topik serupa.`
   },
   {
     id: 3,
-    title: "Curi teknik pancingan (hooks), bukan kontennya",
-    desc: "Membeli formula teks hook pembuka video paling adiktif.",
+    title: "Curi & Kembangkan Teknik Pancingan (Hooks)",
+    desc: "Brainstorming formula teks hook pembuka video paling adiktif untuk disuplai ke 'Script & Hook Generator'.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>,
     category: 'Skrip & Hook',
     defaultParams: { emosi: 'Memicu Rasa Takut Ketinggalan (FOMO/Urgensi)', sapaan: 'Sangat Santai & Gaul (Bro/Sist, Lu/Gua, Guys)' },
@@ -228,12 +256,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Tolong buatkan 5 variasi naskah kalimat Hook (3 detik pertama) yang sangat memikat untuk video bertema "${topic}". Pendekatan emosi yang diinginkan adalah "${params.emosi}" dengan gaya sapaan tutur kata "${params.sapaan}". Sediakan instruksi intonasi suara dan ekspresi wajah yang harus dilakukan di depan kamera untuk setiap draf. WAJIB sertakan CONTOH NYATA kalimat dialog pembuka verbatim yang benar-benar siap dibaca.`
+    getPrompt: (topic, params) => `Tolong buatkan proses brainstorming 5 variasi naskah kalimat Hook (3 detik pertama) yang sangat memikat untuk video bertema "${topic}". Pendekatan emosi yang diinginkan adalah "${params.emosi}" dengan gaya sapaan tutur kata "${params.sapaan}". Sediakan instruksi intonasi suara dan ekspresi wajah yang harus dilakukan di depan kamera untuk setiap draf. WAJIB sertakan CONTOH NYATA kalimat dialog pembuka verbatim yang benar-benar siap dibaca.`
   },
   {
     id: 4,
-    title: "Posting minimal 3 kali seminggu",
-    desc: "Membangun kalender produksi konten mingguan tanpa membuat stres.",
+    title: "Brainstorming Jadwal Posting Realistis",
+    desc: "Membangun kalender produksi & publikasi mingguan tanpa membuat stres agar konsisten memancing SEO.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>,
     category: 'Sistem & Jadwal',
     defaultParams: { sumberdaya: 'Sangat Sibuk (Pekerja Kantoran / Pelajar)', format: 'Campuran: 1 Video Panjang + 2 Shorts' },
@@ -256,12 +284,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Rancang kalender produksi mingguan untuk mengupload 3 konten seminggu dengan topik "${topic}". Hambatan kesibukan saya adalah "${params.sumberdaya}" dengan target format penayangan "${params.format}". Berikan jadwal harian kapan waktu riset, menulis draf, syuting, editing, dan waktu publish optimal. Sertakan CONTOH NYATA jadwal jam-jam realistis dan draf konten harian secara spesifik.`
+    getPrompt: (topic, params) => `Rancang brainstorming kalender produksi mingguan untuk mengupload konten secara konsisten dengan topik "${topic}". Hambatan kesibukan saya adalah "${params.sumberdaya}" dengan target format penayangan "${params.format}". Berikan jadwal harian kapan waktu riset SEO, menulis draf, syuting, editing, dan waktu publish optimal. Sertakan CONTOH NYATA jadwal jam-jam realistis.`
   },
   {
     id: 5,
-    title: "2 detik pertama menentukan segalanya",
-    desc: "Mendesain draf naskah pembuka audio-visual agar penonton tidak skip.",
+    title: "Brainstorming Elemen Visual 2 Detik Pertama",
+    desc: "Mendesain draf konsep visual pembuka (B-Roll) agar penonton tidak skip, siap di-generate di AI Media Creator.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
     category: 'Skrip & Hook',
     defaultParams: { elemen: 'Talking Head Terbuka (Wajah Langsung Depan Kamera)', musik: 'Hening Tanpa Suara lalu Menghentak Tiba-tiba' },
@@ -285,45 +313,37 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Tulis naskah storyboard detik-demi-detik yang dinamis dari Detik 0 hingga Detik 5 untuk video tentang "${topic}". Taktik visual pembuka: "${params.elemen}", gaya musik "${params.musik}". WAJIB sertakan CONTOH NYATA gambaran frame-by-frame (misal: "Scene 1: Layar merah, teks 'RAHASIA' bergetar"), plus dialog, SFX, dan pergerakan kamera ekstrem.`
+    getPrompt: (topic, params) => `Tulis brainstorming naskah storyboard detik-demi-detik yang dinamis dari Detik 0 hingga Detik 5 untuk video tentang "${topic}". Taktik visual pembuka: "${params.elemen}", gaya musik "${params.musik}". WAJIB sertakan CONTOH NYATA gambaran frame-by-frame (misal: "Scene 1: Layar merah, teks 'RAHASIA' bergetar"), plus dialog, SFX, dan pergerakan kamera ekstrem.`
   },
   {
     id: 6,
-    title: "Thumbnail jauh lebih penting daripada videonya",
-    desc: "Mendesain tata letak objek, teks ringkas, dan efek warna thumbnail CTR tinggi.",
+    title: "Sketsa Ide Thumbnail Ber-CTR Tinggi",
+    desc: "Brainstorming tata letak objek, warna, dan CTR thumbnail sebelum diunggah ke alat 'Title & CTR Simulator'.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>,
     category: 'Visual & Thumbnail',
     defaultParams: { warna: 'Kuning Stabilo & Hitam Pekat (Sangat Kontras)', karakter: 'Ekspresi Terkejut dengan Mulut Terbuka' },
-    renderInputs: (params, setParams) => (
+    renderInputs: (params, setParams, globalTopic) => (
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
           <div>
             <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Palet Warna Utama:</label>
-            <select value={params.warna} onChange={e => setParams({...params, warna: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
-              <option value="Kuning Stabilo & Hitam Pekat (Sangat Kontras)">Kuning Stabilo & Hitam Kontras</option>
-              <option value="Merah YouTube & Abu-Abu Industri">Merah & Abu-Abu Industri</option>
-              <option value="Biru Toska Neon & Ungu Violet">Biru Neon & Ungu Violet</option>
-            </select>
+            <input type="text" value={params.warna || ''} onChange={e => setParams({...params, warna: e.target.value})} placeholder="Contoh: Merah Neon & Hitam" className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none" />
           </div>
           <div>
             <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Fokus Karakter/Emosi:</label>
-            <select value={params.karakter} onChange={e => setParams({...params, karakter: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none">
-              <option value="Ekspresi Terkejut dengan Mulut Terbuka">Ekspresi Terkejut / Syok</option>
-              <option value="Wajah Menunjuk Objek Misterius dengan Tatapan Tajam">Menunjuk Objek Misterius</option>
-              <option value="Tanpa Wajah, Fokus ke Produk/Grafik yang Menggunung">Hanya Fokus Objek / Perubahan Grafis</option>
-            </select>
+            <input type="text" value={params.karakter || ''} onChange={e => setParams({...params, karakter: e.target.value})} placeholder="Contoh: Ekspresi Syok" className="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded p-2 focus:ring-1 focus:ring-red-500 outline-none" />
           </div>
         </div>
         {/* Real-time interactive AI Image Layout Previewer inside Card 6 */}
-        <ThumbnailPreviewSection params={params} setParams={setParams} />
+        <ThumbnailPreviewSection params={params} setParams={setParams} globalTopic={globalTopic} />
       </div>
     ),
-    getPrompt: (topic, params) => `Buat panduan konsep visual kreatif untuk draf Thumbnail video bertema "${topic}". Skema warna kontras: "${params.warna}", ekspresi karakter: "${params.karakter}". WAJIB SERTAKAN CONTOH MOCKUP TEKS (maksimal 3 kata pemicu), ide objek di latar belakang, dan spesifikasi efek cahaya. Jadikan ini seolah sketch nyata untuk desainer grafis.`
+    getPrompt: (topic, params) => `Buat panduan brainstorming konsep visual kreatif untuk draf Thumbnail video bertema "${topic}". Skema warna kontras: "${params.warna}", ekspresi karakter: "${params.karakter}". WAJIB SERTAKAN CONTOH MOCKUP TEKS (maksimal 3 kata pemicu), ide objek di latar belakang, dan spesifikasi efek cahaya.`
   },
   {
     id: 7,
-    title: "Fokus ganda pada kandungan yang mendapat sambutan",
-    desc: "Menciptakan sub-topik lanjutan (Part 2) dari draf video berkinerja tinggi.",
+    title: "Brainstorming Sekuel Video Sukses (Part 2)",
+    desc: "Menciptakan ide sub-topik lanjutan setelah 'SEO & Metadata Optimizer' memberikan Anda kata kunci emas.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>,
     category: 'Konten / Niche',
     defaultParams: { viral: '', sudut: 'Uji Coba Ekstrem 30 Hari' },
@@ -343,12 +363,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Seandainya video saya yang berjudul atau bertema "${params.viral || topic}" meledak di pasaran, buatkan rancangan strategi pelipatgandaan konten dengan sudut pandang "${params.sudut}". Berikan CONTOH NYATA draf judul sekuel lanjutan (Part 2), spin-off edukatif, dan plot/skrip singkat untuk serial pendek 3 bagian yang memancing subscribe.`
+    getPrompt: (topic, params) => `Seandainya video saya yang berjudul atau bertema "${params.viral || topic}" meledak di pasaran, buatkan brainstorming rancangan strategi pelipatgandaan konten dengan sudut pandang "${params.sudut}". Berikan CONTOH NYATA draf judul sekuel lanjutan (Part 2), spin-off edukatif, dan plot/skrip singkat untuk serial pendek.`
   },
   {
     id: 8,
-    title: "Buat konten secara pukal (batch) untuk kekal konsisten",
-    desc: "Menciptakan metode hemat energi untuk produksi syuting 4 video sekaligus.",
+    title: "Strategi Batching & Produksi Aset Visual",
+    desc: "Menciptakan metode hemat energi untuk produksi syuting beruntun, dibantu oleh AI Media & Content Creator.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>,
     category: 'Sistem & Jadwal',
     defaultParams: { waktu: 'Hanya 1 - 2 Jam Saja', gaya: 'Satu Kamera Statis dengan Tripod' },
@@ -372,12 +392,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Saya ingin memproduksi konten secata massal (batching) tentang topik "${topic}". Waktu syuting: "${params.waktu}", gaya: "${params.gaya}". Buatkan alur step-by-step untuk memproduksi 4 video sekaligus. Sertakan CONTOH NYATA rundown waktu dari jam ke jam, layout ruangan/kamera, dan ide manajemen skrip agar hemat energi.`
+    getPrompt: (topic, params) => `Saya ingin memproduksi konten secata massal (batching) tentang topik "${topic}". Waktu syuting: "${params.waktu}", gaya: "${params.gaya}". Buatkan ide brainstorming alur step-by-step untuk memproduksi 4 video sekaligus. Sertakan CONTOH NYATA rundown waktu dari jam ke jam, layout ruangan/kamera, dan ide manajemen skrip.`
   },
   {
     id: 9,
-    title: "Gunakan semula setiap video di pelbagai platform",
-    desc: "Mengonversi naskah video panjang menjadi konten klip vertikal pendek.",
+    title: "Brainstorming Daur Ulang Naskah (Repurpose)",
+    desc: "Mengonversi kerangka 'Script Generator' menjadi format konten klip vertikal untuk TikTok atau Shorts.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>,
     category: 'Konten / Niche',
     defaultParams: { platform: 'TikTok & Instagram Reels (Format Cepat)', potong: 'Ambil 3 Bagian Inti Terbaik (Klimaks)' },
@@ -401,12 +421,12 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Rancang draf taktik mengubah (repurpose) video horizontal tentang "${topic}" menjadi klip pendek di "${params.platform}" dengan gaya pemotongan "${params.potong}". WAJIB berikan CONTOH NYATA naskah Call To Action (CTA), format teks caption pop-up, dan contoh detik apa yang diubah menjadi klip baru.`
+    getPrompt: (topic, params) => `Rancang brainstorming taktik mengubah (repurpose) video horizontal tentang "${topic}" menjadi klip pendek di "${params.platform}" dengan gaya pemotongan "${params.potong}". WAJIB berikan CONTOH NYATA naskah Call To Action (CTA), format teks caption pop-up, dan contoh detik apa yang diubah menjadi klip baru.`
   },
   {
     id: 10,
-    title: "Jangan pernah menyerah sebelum mencapai 100 video",
-    desc: "Mendapatkan sistem militer mental dan audit performa video di fase awal.",
+    title: "Brainstorming Ketahanan Mental Creator",
+    desc: "Mendapatkan sistem audit performa ketika metrik CTR & SEO terasa lambat di awal perjalanan YouTube.",
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2"/></svg>,
     category: 'Mindset',
     defaultParams: { video: 'Belum Mulai Sama Sekali (0 Video)', mental: 'Penonton (Views) Masih Sangat Sedikit/Sepi' },
@@ -431,16 +451,24 @@ const SECTIONS = [
         </div>
       </div>
     ),
-    getPrompt: (topic, params) => `Saya di posisi "${params.video}" mengupload tentang "${topic}". Tantangan mental utamaku: "${params.mental}". Berikan surat evaluasi taktis, eksperimen konkret untuk dicoba minggu depan, dan suntikan motivasi. Berikan CONTOH NYATA cara creator lain bertahan dan contoh cara membaca analitik sederhana (CTR & Retensi).`
+    getPrompt: (topic, params) => `Saya di posisi "${params.video}" mengupload tentang "${topic}". Tantangan mental utamaku: "${params.mental}". Berikan brainstorming surat evaluasi taktis, eksperimen konkret untuk dicoba minggu depan, dan suntikan motivasi. Berikan CONTOH NYATA cara creator lain bertahan.`
   }
 ];
 
 function formatMarkdown(text) {
-  let formatted = text
+  if (!text) return '';
+  // Basic HTML sanitization to prevent XSS
+  let sanitized = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+    
+  let formatted = sanitized
     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-extrabold">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em class="text-zinc-300">$1</em>')
     .replace(/`([^`]+)`/g, '<code class="bg-zinc-950 px-1.5 py-0.5 rounded text-red-500 font-mono text-xs border border-zinc-800">$1</code>')
     .replace(/\n/g, '<br>');
+    
   formatted = formatted.split('<br>').map(line => {
       const trimmed = line.trim();
       if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
@@ -448,6 +476,7 @@ function formatMarkdown(text) {
       }
       return line;
   }).join('');
+  
   return `<div class="space-y-2 text-left leading-relaxed text-zinc-300 text-xs sm:text-sm">${formatted}</div>`;
 }
 
@@ -1241,36 +1270,71 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
                 Gunakan <strong className="text-white">Autopilot AI Commander</strong> ini dengan sederhana agar Anda bisa langsung menggunakannya untuk melejitkan channel Anda!
             </p>
             <p className="bg-red-950/20 border border-red-900/40 rounded-xl p-3 text-xs sm:text-sm text-zinc-400">
-                Secara singkat, aplikasi ini adalah <strong className="text-red-400 font-bold">lembar kerja interaktif autopilot</strong> yang menggabungkan 10 aturan sukses dari gambar yang Anda unggah dengan kecerdasan buatan (AI) Gemini & Pollinations secara real-time.
+                Aplikasi ini sekarang terbagi menjadi <strong className="text-red-400 font-bold">6 Alat AI Eksekutor</strong> di bagian atas untuk produksi konten instan, dan <strong className="text-red-400 font-bold">10 Poin Brainstorming</strong> di bagian bawah untuk merencanakan strategi jangka panjang.
             </p>
             <h3 className="font-black text-white uppercase tracking-wider text-xs text-red-500">Berikut adalah panduan langkah demi langkah cara menggunakannya:</h3>
             
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
-                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">1</div>
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Masukkan Topik & Set Parameter Konteks</h4>
-                    <p className="text-xs text-zinc-400">Tentukan topik utama channel Anda di kolom header, lalu sesuaikan Bahasa Output AI, Estetika Visual, dan Panjang Skrip Target pada card Parameter Konteks Saluran.</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 1: Tulis Topik Utama Anda</h4>
+                    <p className="text-xs text-zinc-400">Ketik ide kasar atau topik video Anda di kolom besar paling atas (Misalnya: "Cara masak nasi goreng"). Ini adalah pondasi dari semua alat AI di bawahnya.</p>
                 </div>
             </div>
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
-                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">2</div>
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Pilih Model AI Secara Dinamis</h4>
-                    <p className="text-xs text-zinc-400">Di sudut kanan atas navigasi, klik model dropdown untuk memilih secara dinamis model AI teks (seperti OpenAI, Mistral, Qwen, dll.) yang dimuat real-time dari endpoint resmi Pollinations AI.</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 2: Pilih Otak AI Anda</h4>
+                    <p className="text-xs text-zinc-400">Di pojok kanan atas, pilih model AI yang ingin Anda gunakan. Jika ragu, biarkan saja secara bawaan (Default) karena sudah disetel untuk hasil terbaik.</p>
                 </div>
             </div>
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
-                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">3</div>
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Jalankan Autopilot atau Modular AI</h4>
-                    <p className="text-xs text-zinc-400">Klik "Jalankan Analisis AI" pada setiap 10 aturan emas untuk memproses strategi dan naskah secara khusus, atau klik "Jalankan Autopilot" di bagian atas untuk memproses semua 10 langkah emas secara otomatis berurutan!</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 3: Intip Strategi Saingan</h4>
+                    <p className="text-xs text-zinc-400">Mulai dari kartu pertama: <strong>Bedah Video Kompetitor</strong>. Tempelkan link YouTube dari channel saingan Anda, dan biarkan AI membongkar rahasia viral mereka.</p>
                 </div>
             </div>
             <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
-                <div className="bg-red-600 text-white font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">4</div>
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
                 <div className="space-y-1">
-                    <h4 className="font-bold text-white text-xs sm:text-sm">Unduh Panduan Lengkap</h4>
-                    <p className="text-xs text-zinc-400">Setelah semua langkah selesai atau diproses, klik tombol "Unduh Panduan" untuk mengekspor draf komprehensif Anda dalam format Markdown (.md) yang rapi.</p>
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 4: Cari Judul & Gambar Pancingan</h4>
+                    <p className="text-xs text-zinc-400">Gunakan kartu <strong>Visual Dissector</strong> dan <strong>Title Simulator</strong> untuk menemukan kombinasi judul clickbait dan sketsa thumbnail yang membuat orang penasaran untuk klik.</p>
+                </div>
+            </div>
+            <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div className="space-y-1">
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 5: Minta AI Menulis Naskah</h4>
+                    <p className="text-xs text-zinc-400">Lanjut ke kartu <strong>Script Generator</strong>. Cukup atur durasi dan gaya bahasa, lalu AI akan menuliskan naskah utuh yang tinggal Anda baca saat merekam video.</p>
+                </div>
+            </div>
+            <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div className="space-y-1">
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 6: Persiapkan SEO Saat Upload</h4>
+                    <p className="text-xs text-zinc-400">Sebelum mengunggah video ke YouTube, buka kartu <strong>SEO Optimizer</strong>. Salin deskripsi, kata kunci (tags), dan hashtag otomatis yang dihasilkan agar video Anda muncul di halaman pertama pencarian.</p>
+                </div>
+            </div>
+            <div className="flex gap-4 items-start bg-zinc-950/50 p-4 rounded-xl border border-zinc-800">
+                <div className="bg-red-600/20 text-red-500 p-1.5 rounded-lg shrink-0 border border-red-500/30">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div className="space-y-1">
+                    <h4 className="font-bold text-white text-xs sm:text-sm">Langkah 7: Simpan Ide & Mulai Syuting!</h4>
+                    <p className="text-xs text-zinc-400">Jika butuh rencana tambahan, gulir ke daftar <strong>10 Poin Emas</strong> di layar bawah. Terakhir, klik <strong>Unduh Panduan</strong> agar semua naskah dan ide ini tersimpan rapi di perangkat Anda!</p>
                 </div>
             </div>
           </div>
@@ -1304,7 +1368,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
               Asisten yang Bantu Tembus 100K Subscribers Pertama Anda
           </h2>
           <p className="text-zinc-500 mt-3 max-w-xl mx-auto text-xs sm:text-sm">
-              Isi topik utama channel Anda di bawah ini, lalu klik salah satu dari 10 langkah emas untuk memproses strategi video, naskah, thumbnail, dan jadwal dengan AI secara khusus!
+              Ketik topik video Anda di bawah, lalu manfaatkan 6 Alat AI Eksekutor dan 10 Poin Brainstorming untuk membangun ide tanpa batas!
           </p>
 
           <div className="mt-8 bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 w-full mx-auto shadow-2xl relative text-left">
@@ -1460,6 +1524,24 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
           userData={userData}
         />
 
+        {/* Script & Hook Generator Card */}
+        <ScriptGenerator
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          formatMarkdown={formatMarkdown}
+        />
+
+        {/* SEO & Metadata Optimizer Card */}
+        <SEOOptimizer
+          globalTopic={globalTopic}
+          selectedModel={selectedModel}
+          callPollinationsAI={callPollinationsAI}
+          showToast={showToast}
+          formatMarkdown={formatMarkdown}
+        />
+
         {/* Image Generator Card */}
         <ImageGenerator 
           globalTopic={globalTopic}
@@ -1564,7 +1646,7 @@ PENTING: Analisis ini harus dirancang dari awal dengan pendekatan yang sangat ta
                           ...prev,
                           [section.id]: { ...prev[section.id], params: newParams }
                       }));
-                  })}
+                  }, globalTopic)}
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                           <button onClick={() => getQuickTip(section)} disabled={sData.tipLoading} className={`text-xs font-bold text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${sData.tipLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, Loader2, Cpu, Sparkles, UploadCloud, Download } from 'lucide-react';
+import { Eye, Loader2, Cpu, Sparkles, UploadCloud, Download, Info } from 'lucide-react';
 
 interface VisualDissectorProps {
   globalTopic: string;
@@ -91,6 +91,12 @@ Format laporan Anda dalam bentuk dokumen Markdown yang dirancang secara profesio
           <div className="text-left">
             <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">Bedah Visual & Thumbnail</h3>
             <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Unggah draf thumbnail atau storyboard visual Anda untuk dianalisis oleh AI Vision secara mendalam.</p>
+          </div>
+        </div>
+        <div className="group relative hidden sm:block">
+          <Info className="w-5 h-5 text-zinc-500 cursor-help hover:text-white transition-colors" />
+          <div className="absolute right-0 top-8 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-xs text-zinc-300 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 text-left">
+            <strong>Cara kerja:</strong> AI akan membedah elemen visual thumbnail secara detail sehingga Anda tahu persis teknik warna, komposisi, dan ekspresi apa yang membuatnya menarik perhatian penonton.
           </div>
         </div>
       </div>

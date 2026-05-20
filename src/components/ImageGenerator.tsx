@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Loader2, Image, Video, Volume2, VolumeX, Download } from 'lucide-react';
+import { Sparkles, Loader2, Image, Video, Volume2, VolumeX, Download, Info } from 'lucide-react';
 
 interface ImageGeneratorProps {
   globalTopic: string;
@@ -247,13 +247,21 @@ Kembalikan HANYA array JSON tersebut, tanpa format markdown \`\`\`json, penjelas
     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
       {/* Header and Tab Switcher */}
       <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 border-b border-zinc-800/80 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="bg-emerald-500/10 border border-emerald-500/25 p-2 rounded-xl text-emerald-500 shrink-0">
-            <Sparkles className="w-5 h-5 animate-pulse" />
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 flex-1">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-emerald-500/10 border border-emerald-500/25 p-2 rounded-xl text-emerald-500 shrink-0">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">AI Media & Content Creator</h3>
+              <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Buat gambar visual berkualitas tinggi dan klip video B-Roll sinematik dalam satu tempat.</p>
+            </div>
           </div>
-          <div className="text-left">
-            <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-left">AI Media & Content Creator</h3>
-            <p className="text-[10px] text-zinc-500 font-semibold mt-0.5 text-left">Buat gambar visual berkualitas tinggi dan klip video B-Roll sinematik dalam satu tempat.</p>
+          <div className="group relative hidden lg:block ml-2">
+            <Info className="w-5 h-5 text-zinc-500 cursor-help hover:text-white transition-colors" />
+            <div className="absolute left-0 top-8 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-xs text-zinc-300 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 text-left">
+              <strong>Cara kerja:</strong> Generate thumbnail atau B-Roll video pendek secara otomatis berdasarkan instruksi visual yang Anda berikan menggunakan AI generatif khusus visual.
+            </div>
           </div>
         </div>
 
