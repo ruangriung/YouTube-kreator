@@ -102,8 +102,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           <button
             onClick={() => setSelectedMode('kreator')}
             className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${selectedMode === 'kreator'
-                ? 'bg-red-600 text-white shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)]'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+              ? 'bg-red-600 text-white shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)]'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
               }`}
           >
             Kreator Mode
@@ -112,8 +112,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           <button
             onClick={() => setSelectedMode('riset')}
             className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${selectedMode === 'riset'
-                ? 'bg-purple-600 text-white shadow-[0_0_15px_-3px_rgba(147,51,234,0.4)]'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+              ? 'bg-purple-600 text-white shadow-[0_0_15px_-3px_rgba(147,51,234,0.4)]'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
               }`}
           >
             Riset Niche
@@ -122,8 +122,8 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
           <button
             onClick={() => setSelectedMode('skrip')}
             className={`flex-1 min-w-[110px] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all active:scale-95 ${selectedMode === 'skrip'
-                ? 'bg-amber-600 text-white shadow-[0_0_15px_-3px_rgba(217,119,6,0.4)]'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
+              ? 'bg-amber-600 text-white shadow-[0_0_15px_-3px_rgba(217,119,6,0.4)]'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40'
               }`}
           >
             Hook & Skrip
@@ -227,7 +227,10 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-20 text-white">Didukung oleh ekosistem teknologi AI terbaik di dunia</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-            <div title="Cloudflare" className="flex items-center"><img src="https://www.cloudflare.com/img/logo-cloudflare-dark.svg" className="h-4 invert" alt="Cloudflare" /></div>
+            <div title="YouTube" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/youtube/FF0000" className="h-5" alt="YouTube" /><span className="font-bold text-[10px] text-white">YouTube</span></div>
+            <div title="Google AdSense" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/googleadsense/4285F4" className="h-5" alt="Google AdSense" /><span className="font-bold text-[10px] text-white">AdSense</span></div>
+            <div title="Meta" className="flex items-center gap-2"><img src="https://cdn.simpleicons.org/meta/0668E1" className="h-4" alt="Meta" /><span className="font-bold text-[10px] text-white">Meta</span></div>
+            <div title="Cloudflare" className="flex items-center"><img src="/logo-cloudflare-dark.svg" className="h-4" alt="Cloudflare" /></div>
             <div title="Google" className="flex items-center gap-2"><img src="/google-icon.svg" className="h-4" alt="Google" /><span className="font-bold text-[10px] text-white">Google</span></div>
             <div title="GitHub" className="flex items-center gap-2"><img src="/github.svg" className="h-5 invert" alt="GitHub" /><span className="font-bold text-[10px] text-white">GitHub</span></div>
             <div title="Antigravity" className="flex items-center gap-2"><img src="/antigravity.svg" className="h-6" alt="Antigravity" /><span className="font-bold text-[10px] text-white">Antigravity</span></div>
