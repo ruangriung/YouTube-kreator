@@ -1,10 +1,14 @@
 function isLocalRequest(request: any): boolean {
   const url = new URL(request.url);
+  const hostname = url.hostname;
   return (
-    url.hostname === 'localhost' ||
-    url.hostname === '127.0.0.1' ||
-    url.hostname.startsWith('192.168.') ||
-    url.hostname === '0.0.0.0'
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local') ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
   );
 }
 
@@ -39,6 +43,11 @@ export async function onRequest(context: any) {
     }
 
     const { DB } = env;
+    if (!DB) {
+      return new Response(JSON.stringify({ 
+        error: "Koneksi database (D1) tidak ditemukan. Jika ini adalah lingkungan produksi, pastikan Anda telah membuat D1 database 'creator-db' dan mengikatnya (binding) dengan nama 'DB' di Pengaturan Functions Cloudflare Pages." 
+      }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
 
     // Periksa apakah tabel users sudah ada, jika belum, ini adalah setup pertama
     await DB.prepare(`CREATE TABLE IF NOT EXISTS users (

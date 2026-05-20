@@ -1,16 +1,26 @@
 function isLocalRequest(request: any): boolean {
   const url = new URL(request.url);
+  const hostname = url.hostname;
   return (
-    url.hostname === 'localhost' ||
-    url.hostname === '127.0.0.1' ||
-    url.hostname.startsWith('192.168.') ||
-    url.hostname === '0.0.0.0'
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local') ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
   );
 }
 
 export async function onRequest(context: any) {
   const { request, env } = context;
   const { DB } = env;
+
+  if (!DB) {
+    return new Response(JSON.stringify({ 
+      error: "Koneksi database (D1) tidak ditemukan. Jika ini adalah lingkungan produksi, pastikan Anda telah membuat D1 database 'creator-db' dan mengikatnya (binding) dengan nama 'DB' di Pengaturan Functions Cloudflare Pages." 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
 
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -54,7 +64,7 @@ export async function onRequest(context: any) {
 
   // 3. Parse input params for AI call
   try {
-    const { prompt, systemInstruction, model = 'openai' } = await request.json();
+    const { prompt, systemInstruction, model = 'openai', type = 'text', width, height, duration, aspectRatio, audio } = await request.json();
     if (!prompt) {
       return new Response('Missing prompt', { status: 400 });
     }
@@ -62,6 +72,79 @@ export async function onRequest(context: any) {
     // 4. Securely read API Key purely on backend
     const apiKey = env.VITE_POLLINATIONS_API_KEY || '';
     const cleanApiKey = apiKey.trim().replace(/^['"]|['"]$/g, '');
+
+    if (type === 'image') {
+      const encodedPrompt = encodeURIComponent(prompt);
+      let imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      if (width) imageUrl += `&width=${width}`;
+      if (height) imageUrl += `&height=${height}`;
+      const aiResponse = await fetch(imageUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${cleanApiKey}`
+        }
+      });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.text().catch(() => '');
+        return new Response(
+          JSON.stringify({ error: errorData || `Image API Error: ${aiResponse.status}` }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = aiResponse.headers.get('Content-Type') || 'image/png';
+      const buffer = await aiResponse.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i += 8192) {
+        // Use subarray to safely process chunks of 8192 bytes
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      }
+      const base64 = btoa(binary);
+      return new Response(JSON.stringify({ imageBase64: `data:${contentType};base64,${base64}` }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (type === 'video') {
+      const encodedPrompt = encodeURIComponent(prompt);
+      let videoUrl = `https://gen.pollinations.ai/video/${encodedPrompt}?model=${encodeURIComponent(model)}`;
+      if (width) videoUrl += `&width=${width}`;
+      if (height) videoUrl += `&height=${height}`;
+      if (duration) videoUrl += `&duration=${duration}`;
+      if (aspectRatio) videoUrl += `&aspectRatio=${aspectRatio}`;
+      if (audio !== undefined) videoUrl += `&audio=${audio}`;
+
+      const aiResponse = await fetch(videoUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${cleanApiKey}`
+        }
+      });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.text().catch(() => '');
+        return new Response(
+          JSON.stringify({ error: errorData || `Video API Error: ${aiResponse.status}` }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const contentType = aiResponse.headers.get('Content-Type') || 'video/mp4';
+      const buffer = await aiResponse.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i += 8192) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      }
+      const base64 = btoa(binary);
+      return new Response(JSON.stringify({ videoBase64: `data:${contentType};base64,${base64}` }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const messages: any[] = [];
     if (systemInstruction) {
