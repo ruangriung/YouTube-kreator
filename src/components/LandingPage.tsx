@@ -245,7 +245,7 @@ export default function LandingPage({ onLoginSuccess }: { onLoginSuccess: () => 
             <div title="Google AdSense" className="flex items-center gap-2"><img src="/googleadsense.svg" className="h-5" alt="Google AdSense" /><span className="font-bold text-[10px] text-white">AdSense</span></div>
             <div title="Cloudflare" className="flex items-center"><img src="/logo-cloudflare-dark.svg" className="h-4" alt="Cloudflare" /></div>
             <div title="Google" className="flex items-center gap-2"><img src="/google-icon.svg" className="h-4" alt="Google" /><span className="font-bold text-[10px] text-white">Google</span></div>
-            <div title="Google Cloud" className="flex items-center gap-2"><img src="/gcp.svg" className="h-4.5" alt="Google Cloud" /><span className="font-bold text-[10px] text-white">Google Cloud</span></div>
+            <div title="Google Cloud" className="flex items-center gap-2"><img src="/gcp.svg" className="h-4.5" alt="Google Cloud" /><span className="font-bold text-[10px] text-white">GCP</span></div>
             <div title="GitHub" className="flex items-center gap-2"><img src="/github.svg" className="h-5 invert" alt="GitHub" /><span className="font-bold text-[10px] text-white">GitHub</span></div>
             <div title="Antigravity" className="flex items-center gap-2"><img src="/antigravity.svg" className="h-6" alt="Antigravity" /><span className="font-bold text-[10px] text-white">Antigravity</span></div>
             <div title="DeepSeek" className="flex items-center"><img src="/deepseek.svg" className="h-6" alt="DeepSeek" /></div>
