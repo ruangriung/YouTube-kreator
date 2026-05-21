@@ -21,6 +21,7 @@ export default function CompetitorAnalyzer({
   const [competitorTranscript, setCompetitorTranscript] = useState<string | null>(null);
   const [competitorAnalysis, setCompetitorAnalysis] = useState<string | null>(null);
   const [competitorError, setCompetitorError] = useState<string | null>(null);
+  const [loadingStep, setLoadingStep] = useState('');
 
   const analyzeCompetitorVideo = async () => {
     if (!competitorUrl.trim()) {
@@ -31,6 +32,7 @@ export default function CompetitorAnalyzer({
     setCompetitorError(null);
     setCompetitorTranscript(null);
     setCompetitorAnalysis(null);
+    setLoadingStep('Mengekstrak transkrip percakapan video... (AI Supadata sedang menyiapkan data transkrip, mohon tunggu)');
 
     try {
       const token = await getAccessToken();
@@ -55,6 +57,7 @@ export default function CompetitorAnalyzer({
       }
 
       setCompetitorTranscript(data.transcript);
+      setLoadingStep('Menganalisis psikologi retensi, struktur skrip, dan hook dengan AI...');
 
       const systemInstruction = "Anda adalah Ahli Analisis Kompetitor YouTube dan Psikologi Retensi Penonton kelas dunia.";
       const prompt = `Bedah kenapa video ini bisa menarik perhatian penonton berdasarkan transkrip berikut: \n\n"${data.transcript}"\n\nAnalisis dengan detail struktur hook visual/verbal di 30 detik pertama, penataan ritme cerita, teknik penjelasan atau retensi penonton di pertengahan video, dan taktik Call-to-Action di akhir. Berikan rekomendasi konkret berupa 3 strategi emas yang bisa langsung kami adaptasi untuk membuat video yang jauh lebih baik!`;
@@ -82,6 +85,7 @@ export default function CompetitorAnalyzer({
       setCompetitorError(friendlyError);
     } finally {
       setAnalyzingCompetitor(false);
+      setLoadingStep('');
     }
   };
 
@@ -137,6 +141,18 @@ export default function CompetitorAnalyzer({
             </button>
           </div>
         </div>
+
+        {analyzingCompetitor && loadingStep && (
+          <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-left flex items-center gap-3.5 border-l-2 border-l-red-500 animate-in fade-in duration-300">
+            <Loader2 className="w-5 h-5 animate-spin text-red-500 shrink-0" />
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest block">Proses Analisis Video</span>
+              <p className="text-[11px] text-zinc-300 leading-relaxed">
+                {loadingStep}
+              </p>
+            </div>
+          </div>
+        )}
 
         {competitorError && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200 text-left">
