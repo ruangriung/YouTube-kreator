@@ -166,7 +166,7 @@ export async function onRequest(context: any) {
     }
 
     // Panggil Supadata API
-    const response = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}`, {
+    let response = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}`, {
       method: 'GET',
       headers: {
         'x-api-key': cleanApiKey
@@ -183,7 +183,66 @@ export async function onRequest(context: any) {
       });
     }
 
-    const data: any = await response.json();
+    let data: any = await response.json();
+
+    // Jika respons adalah 202 Accepted (asinkronus) atau mengandung jobId/status processing
+    if (response.status === 202 || data.jobId || data.status === 'processing' || data.status === 'pending') {
+      const jobId = data.jobId;
+      if (!jobId) {
+        return new Response(JSON.stringify({ error: 'Proses transkrip sedang berjalan di server Supadata, namun tidak menerima Job ID.' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      let completed = false;
+      const maxAttempts = 15; // Coba maksimum 15 kali (30 detik total)
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Tunggu 2 detik
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const jobResponse = await fetch(`https://api.supadata.ai/v1/transcript/${jobId}`, {
+          method: 'GET',
+          headers: {
+            'x-api-key': cleanApiKey
+          }
+        });
+
+        if (!jobResponse.ok) {
+          const jobErrData = await jobResponse.json().catch(() => ({}));
+          return new Response(JSON.stringify({ 
+            error: jobErrData.message || `Gagal memeriksa status pekerjaan transkrip: ${jobResponse.statusText}` 
+          }), {
+            status: jobResponse.status,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const jobData: any = await jobResponse.json();
+        if (jobData.status === 'completed') {
+          data = jobData;
+          completed = true;
+          break;
+        } else if (jobData.status === 'failed') {
+          return new Response(JSON.stringify({ 
+            error: jobData.error || 'Pemrosesan transkrip oleh AI Supadata gagal.' 
+          }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      if (!completed) {
+        return new Response(JSON.stringify({ 
+          error: 'Transkrip sedang diproses oleh AI Supadata (video panjang). Silakan coba lagi beberapa saat lagi untuk video ini.' 
+        }), {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     const segments = data.content || [];
     
     let concatenatedText = '';
@@ -191,6 +250,15 @@ export async function onRequest(context: any) {
       concatenatedText = segments;
     } else if (Array.isArray(segments)) {
       concatenatedText = segments.map((s: any) => s.text).join(' ');
+    }
+
+    if (!concatenatedText.trim()) {
+      return new Response(JSON.stringify({ 
+        error: 'Video ini tidak memiliki teks transkrip atau subtitle aktif yang dapat dibaca.' 
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     return new Response(JSON.stringify({ 
