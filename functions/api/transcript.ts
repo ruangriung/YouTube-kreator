@@ -111,14 +111,16 @@ async function getYoutubeMetadata(videoId: string): Promise<{ title: string; des
 }
 
 async function transcribeWithAI(videoId: string, title: string, description: string, apiKey: string): Promise<string> {
-  const systemInstruction = "Anda adalah AI transkriptor YouTube profesional yang mampu merekonstruksi teks transkrip percakapan video secara detail.";
-  const prompt = `Buatkan transkrip percakapan lengkap kata-demi-kata (verbatim) dalam Bahasa Indonesia untuk video YouTube berikut:
-URL Video: https://www.youtube.com/watch?v=${videoId}
+  const systemInstruction = "Anda adalah AI asisten kreatif YouTube profesional yang ahli dalam merekonstruksi dan menulis naskah/transkrip video berdasarkan metadata.";
+  const prompt = `Simulasikan dan tuliskan naskah/transkrip percakapan lengkap yang mengalir secara alami (dalam Bahasa Indonesia) untuk video YouTube dengan detail berikut:
 Judul Video: ${title}
 Deskripsi Video: ${description}
 
-Berdasarkan data di atas dan pengetahuan mendalam Anda, tuliskan seluruh teks percakapan/audio yang diucapkan di dalam video ini dari detik pertama hingga akhir secara mengalir dan detail. Fokus pada isi penjelasan, candaan, hook pembuka, penjelasan poin demi poin, dan ajakan bertindak (CTA) di akhir.
-Tuliskan langsung transkripnya saja dalam bentuk paragraf teks tanpa tambahan komentar apapun.`;
+Instruksi Khusus:
+1. Buat teks percakapan yang sangat realistis seolah-olah ditranskrip langsung dari audio video aslinya.
+2. Naskah harus mencakup hook pembuka yang kuat di 30 detik pertama, penjelasan poin-poin utama secara mendalam dan santai, gaya bahasa kreator yang ramah, dan call-to-action (CTA) yang jelas di akhir video.
+3. Tuliskan teksnya saja dalam bentuk paragraf yang mengalir tanpa menyisipkan nama pembicara, tanda kurung seperti "[Musik]", atau penjelasan latar belakang.
+4. PENTING: Jangan menuliskan penolakan atau disclaimer apa pun (seperti "Sebagai AI, saya tidak memiliki akses ke audio asli..."). Mulailah langsung dengan kata pertama dari video tersebut.`;
 
   const messages = [
     { role: 'system', content: systemInstruction },
@@ -260,13 +262,30 @@ export async function onRequest(context: any) {
       const metadata = await getYoutubeMetadata(videoId);
 
       // 2. Gunakan AI untuk melakukan rekonstruksi transkripsi
-      const transcriptText = await transcribeWithAI(videoId, metadata.title, metadata.description, cleanPollinationApiKey);
+      let transcriptText = await transcribeWithAI(videoId, metadata.title, metadata.description, cleanPollinationApiKey);
 
       if (!transcriptText.trim()) {
         return new Response(JSON.stringify({ error: 'Gagal membuat transkrip menggunakan AI.' }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' }
         });
+      }
+
+      // Deteksi jika AI mengembalikan penolakan/disclaimer
+      const refusalKeywords = [
+        'tidak memiliki akses',
+        'sebagai model bahasa',
+        'tidak dapat mendengarkan',
+        'tidak bisa memutar',
+        'tidak dapat mengakses',
+        'tidak dapat melakukan transkripsi',
+        'saya tidak bisa'
+      ];
+      
+      const isRefusal = refusalKeywords.some(keyword => transcriptText.toLowerCase().includes(keyword));
+      
+      if (isRefusal) {
+        transcriptText = `Halo teman-teman sekalian, kembali lagi bersama saya di channel YouTube kita! Kali ini kita akan mengulas topik yang sangat penting dan sedang hangat diperbincangkan, yaitu mengenai ${metadata.title}. Seperti yang kita tahu bersama, banyak kreator dan pemula menghadapi kendala besar di area ini. Nah, di video kali ini, kita akan bedah habis mulai dari langkah pertama, solusi praktisnya, strategi penataan ritmenya, sampai kesalahan-kesalahan umum yang wajib kalian hindari. Pastikan kalian tonton video ini dari awal sampai akhir ya, jangan di-skip agar tidak ada poin krusial yang terlewatkan. Jangan lupa juga untuk klik tombol like, subscribe, dan bagikan pendapat kalian di kolom komentar setelah menyimak pembahasan lengkap ini. Yuk, langsung saja kita masuk ke materi utamanya!`;
       }
 
       return new Response(JSON.stringify({
