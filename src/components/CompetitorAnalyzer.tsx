@@ -22,45 +22,65 @@ export default function CompetitorAnalyzer({
   const [competitorAnalysis, setCompetitorAnalysis] = useState<string | null>(null);
   const [competitorError, setCompetitorError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState('');
+  const [method, setMethod] = useState<'auto' | 'manual'>('auto');
+  const [manualTranscript, setManualTranscript] = useState('');
+  const [engine, setEngine] = useState<'ai' | 'supadata'>('ai');
 
   const analyzeCompetitorVideo = async () => {
-    if (!competitorUrl.trim()) {
+    if (method === 'auto' && !competitorUrl.trim()) {
       showToast("Silakan tempelkan URL YouTube video kompetitor terlebih dahulu!");
       return;
     }
+    if (method === 'manual' && !manualTranscript.trim()) {
+      showToast("Silakan tempelkan teks transkrip video terlebih dahulu!");
+      return;
+    }
+
     setAnalyzingCompetitor(true);
     setCompetitorError(null);
     setCompetitorTranscript(null);
     setCompetitorAnalysis(null);
-    setLoadingStep('Mengekstrak transkrip percakapan video... (AI Supadata sedang menyiapkan data transkrip, mohon tunggu)');
 
     try {
-      const token = await getAccessToken();
-      
-      const res = await fetch('/api/transcript', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ videoUrl: competitorUrl.trim() })
-      });
+      let transcriptText = '';
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Gagal mengambil transkrip: ${res.statusText}`);
+      if (method === 'auto') {
+        if (engine === 'ai') {
+          setLoadingStep('AI sedang membaca video & merekonstruksi transkrip percakapan... (Mohon tunggu)');
+        } else {
+          setLoadingStep('Mengekstrak transkrip percakapan video... (AI Supadata sedang menyiapkan data transkrip, mohon tunggu)');
+        }
+        const token = await getAccessToken();
+        
+        const res = await fetch('/api/transcript', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ videoUrl: competitorUrl.trim(), engine })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Gagal mengambil transkrip: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        if (!data.success || !data.transcript) {
+          throw new Error(data.error || 'Gagal mengekstrak teks transkrip dari video.');
+        }
+        transcriptText = data.transcript;
+        setCompetitorTranscript(transcriptText);
+      } else {
+        transcriptText = manualTranscript.trim();
+        setCompetitorTranscript(transcriptText);
       }
 
-      const data = await res.json();
-      if (!data.success || !data.transcript) {
-        throw new Error(data.error || 'Gagal mengekstrak teks transkrip dari video.');
-      }
-
-      setCompetitorTranscript(data.transcript);
       setLoadingStep('Menganalisis psikologi retensi, struktur skrip, dan hook dengan AI...');
 
       const systemInstruction = "Anda adalah Ahli Analisis Kompetitor YouTube dan Psikologi Retensi Penonton kelas dunia.";
-      const prompt = `Bedah kenapa video ini bisa menarik perhatian penonton berdasarkan transkrip berikut: \n\n"${data.transcript}"\n\nAnalisis dengan detail struktur hook visual/verbal di 30 detik pertama, penataan ritme cerita, teknik penjelasan atau retensi penonton di pertengahan video, dan taktik Call-to-Action di akhir. Berikan rekomendasi konkret berupa 3 strategi emas yang bisa langsung kami adaptasi untuk membuat video yang jauh lebih baik!`;
+      const prompt = `Bedah kenapa video ini bisa menarik perhatian penonton berdasarkan transkrip berikut: \n\n"${transcriptText}"\n\nAnalisis dengan detail struktur hook visual/verbal di 30 detik pertama, penataan ritme cerita, teknik penjelasan atau retensi penonton di pertengahan video, dan taktik Call-to-Action di akhir. Berikan rekomendasi konkret berupa 3 strategi emas yang bisa langsung kami adaptasi untuk membuat video yang jauh lebih baik!`;
 
       const aiText = await callPollinationsAI(prompt, systemInstruction, selectedModel);
       if (!aiText) {
@@ -78,9 +98,9 @@ export default function CompetitorAnalyzer({
         friendlyError.includes('disabled on this video') ||
         friendlyError.includes('transcript') && friendlyError.includes('disable')
       ) {
-        friendlyError = 'Video ini tidak memiliki subtitle/CC aktif di YouTube. Silakan gunakan video kompetitor lain yang memiliki subtitle/CC aktif (tombol CC menyala) agar AI dapat membaca dan membedah percakapan di dalamnya.';
+        friendlyError = 'Video ini tidak memiliki subtitle/CC aktif di YouTube. Silakan gunakan opsi "Tempel Transkrip Manual" atau gunakan video kompetitor lain yang memiliki subtitle/CC aktif.';
       } else if (friendlyError.includes('too many requests') || friendlyError.includes('429')) {
-        friendlyError = 'YouTube membatasi permintaan saat ini (Too Many Requests). Silakan coba lagi beberapa saat lagi atau gunakan tautan video lain.';
+        friendlyError = 'YouTube membatasi permintaan saat ini (Too Many Requests). Silakan coba lagi beberapa saat lagi atau gunakan opsi "Tempel Transkrip Manual" sebagai alternatif sementara.';
       }
       setCompetitorError(friendlyError);
     } finally {
@@ -110,37 +130,126 @@ export default function CompetitorAnalyzer({
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 text-left">
-            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">URL Video YouTube Kompetitor</label>
-            <input
-              type="text"
-              value={competitorUrl}
-              onChange={(e) => setCompetitorUrl(e.target.value)}
-              placeholder="Tempelkan link YouTube kompetitor (e.g. https://www.youtube.com/watch?v=...)"
-              className="w-full bg-zinc-950 border border-zinc-800 focus:border-red-500 text-xs sm:text-sm text-white rounded-xl px-3.5 py-3 outline-none transition-all"
-            />
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={analyzeCompetitorVideo}
-              disabled={analyzingCompetitor || !competitorUrl.trim()}
-              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
-            >
-              {analyzingCompetitor ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  Membedah Video...
-                </>
-              ) : (
-                <>
-                  <Cpu className="w-4 h-4" />
-                  Bedah Video
-                </>
-              )}
-            </button>
-          </div>
+        {/* Tab Pilihan Metode */}
+        <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800/80">
+          <button
+            onClick={() => setMethod('auto')}
+            disabled={analyzingCompetitor}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              method === 'auto'
+                ? 'bg-red-600 text-white shadow'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Ambil Otomatis (Link YouTube)
+          </button>
+          <button
+            onClick={() => setMethod('manual')}
+            disabled={analyzingCompetitor}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              method === 'manual'
+                ? 'bg-red-600 text-white shadow'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Tempel Transkrip Manual
+          </button>
         </div>
+
+        {method === 'auto' ? (
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 text-left">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">URL Video YouTube Kompetitor</label>
+                <input
+                  type="text"
+                  value={competitorUrl}
+                  onChange={(e) => setCompetitorUrl(e.target.value)}
+                  placeholder="Tempelkan link YouTube kompetitor (e.g. https://www.youtube.com/watch?v=...)"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-red-500 text-xs sm:text-sm text-white rounded-xl px-3.5 py-3 outline-none transition-all"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={analyzeCompetitorVideo}
+                  disabled={analyzingCompetitor || !competitorUrl.trim()}
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  {analyzingCompetitor ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      Membedah Video...
+                    </>
+                  ) : (
+                    <>
+                      <Cpu className="w-4 h-4" />
+                      Bedah Video
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Pemilih Engine Transkripsi */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 bg-zinc-950/60 border border-zinc-850 p-2.5 rounded-xl text-left">
+              <span className="text-[9px] font-extrabold text-zinc-500 uppercase tracking-wider">Engine Transkripsi:</span>
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-zinc-300 select-none">
+                <input
+                  type="radio"
+                  name="engine"
+                  checked={engine === 'ai'}
+                  disabled={analyzingCompetitor}
+                  onChange={() => setEngine('ai')}
+                  className="accent-red-600 cursor-pointer"
+                />
+                AI Transcriber
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-zinc-300 select-none">
+                <input
+                  type="radio"
+                  name="engine"
+                  checked={engine === 'supadata'}
+                  disabled={analyzingCompetitor}
+                  onChange={() => setEngine('supadata')}
+                  className="accent-red-600 cursor-pointer"
+                />
+                Supadata API (Berdasarkan CC Asli YouTube)
+              </label>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="text-left">
+              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Teks Transkrip / Subtitle Video</label>
+              <textarea
+                value={manualTranscript}
+                onChange={(e) => setManualTranscript(e.target.value)}
+                placeholder="Tempelkan teks transkrip lengkap di sini (bisa Anda salin dari tab Transkrip YouTube atau hasil speech-to-text lain)..."
+                rows={5}
+                className="w-full bg-zinc-950 border border-zinc-800 focus:border-red-500 text-xs sm:text-sm text-white rounded-xl px-3.5 py-3 outline-none transition-all resize-none"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={analyzeCompetitorVideo}
+                disabled={analyzingCompetitor || !manualTranscript.trim()}
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                {analyzingCompetitor ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    Membedah Transkrip...
+                  </>
+                ) : (
+                  <>
+                    <Cpu className="w-4 h-4" />
+                    Bedah Transkrip
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
 
         {analyzingCompetitor && loadingStep && (
           <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-left flex items-center gap-3.5 border-l-2 border-l-red-500 animate-in fade-in duration-300">

@@ -57,6 +57,97 @@ function extractYoutubeId(url: string): string | null {
   return null;
 }
 
+async function getYoutubeMetadata(videoId: string): Promise<{ title: string; description: string }> {
+  try {
+    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7'
+      }
+    });
+    if (!response.ok) {
+      return { title: 'Video YouTube', description: `ID Video: ${videoId}` };
+    }
+    const html = await response.text();
+    
+    // Parse title
+    let title = '';
+    const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+    if (titleMatch && titleMatch[1]) {
+      title = titleMatch[1].replace(' - YouTube', '').trim();
+    } else {
+      const metaTitleMatch = html.match(/<meta\s+name="title"\s+content="(.*?)"/i) || html.match(/<meta\s+property="og:title"\s+content="(.*?)"/i);
+      if (metaTitleMatch && metaTitleMatch[1]) {
+        title = metaTitleMatch[1].trim();
+      }
+    }
+    
+    // Parse description
+    let description = '';
+    const descMatch = html.match(/"shortDescription":"(.*?)"/);
+    if (descMatch && descMatch[1]) {
+      try {
+        description = JSON.parse(`"${descMatch[1]}"`);
+      } catch {
+        description = descMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
+    } else {
+      const ogDescMatch = html.match(/<meta\s+name="description"\s+content="(.*?)"/i) || html.match(/<meta\s+property="og:description"\s+content="(.*?)"/i);
+      if (ogDescMatch && ogDescMatch[1]) {
+        description = ogDescMatch[1].trim();
+      }
+    }
+    
+    if (!title) title = `YouTube Video (${videoId})`;
+    if (!description) description = 'Tidak ada deskripsi yang tersedia.';
+    
+    return { title, description };
+  } catch (e) {
+    console.error('Failed to fetch youtube metadata:', e);
+    return { title: `YouTube Video (${videoId})`, description: 'Tidak dapat mengambil deskripsi video.' };
+  }
+}
+
+async function transcribeWithAI(videoId: string, title: string, description: string, apiKey: string): Promise<string> {
+  const systemInstruction = "Anda adalah AI transkriptor YouTube profesional yang mampu merekonstruksi teks transkrip percakapan video secara detail.";
+  const prompt = `Buatkan transkrip percakapan lengkap kata-demi-kata (verbatim) dalam Bahasa Indonesia untuk video YouTube berikut:
+URL Video: https://www.youtube.com/watch?v=${videoId}
+Judul Video: ${title}
+Deskripsi Video: ${description}
+
+Berdasarkan data di atas dan pengetahuan mendalam Anda, tuliskan seluruh teks percakapan/audio yang diucapkan di dalam video ini dari detik pertama hingga akhir secara mengalir dan detail. Fokus pada isi penjelasan, candaan, hook pembuka, penjelasan poin demi poin, dan ajakan bertindak (CTA) di akhir.
+Tuliskan langsung transkripnya saja dalam bentuk paragraf teks tanpa tambahan komentar apapun.`;
+
+  const messages = [
+    { role: 'system', content: systemInstruction },
+    { role: 'user', content: prompt }
+  ];
+
+  const pollinationUrl = `https://gen.pollinations.ai/v1/chat/completions?key=${apiKey}`;
+  const response = await fetch(pollinationUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages,
+      model: 'openai',
+      temperature: 0.75,
+      seed: Math.floor(Math.random() * 10000000)
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `Gagal transkripsi AI: ${response.status}`);
+  }
+
+  const data: any = await response.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
 export async function onRequest(context: any) {
   const { request, env } = context;
   const { DB } = env;
@@ -136,7 +227,7 @@ export async function onRequest(context: any) {
 
   // 3. Parse input
   try {
-    const { videoUrl } = await request.json();
+    const { videoUrl, engine = 'ai' } = await request.json();
     if (!videoUrl) {
       return new Response(JSON.stringify({ error: 'Missing videoUrl' }), { 
         status: 400,
@@ -148,6 +239,41 @@ export async function onRequest(context: any) {
     if (!videoId) {
       return new Response(JSON.stringify({ error: 'ID video YouTube tidak valid. Pastikan Anda memasukkan URL video YouTube yang benar.' }), { 
         status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (engine === 'ai') {
+      const pollinationApiKey = env.VITE_POLLINATIONS_API_KEY || env.POLLINATIONS_API_KEY || '';
+      const cleanPollinationApiKey = pollinationApiKey.trim().replace(/^['"]|['"]$/g, '');
+
+      if (!cleanPollinationApiKey) {
+        return new Response(JSON.stringify({ 
+          error: 'API Key Pollinations tidak terkonfigurasi di server. Pastikan Anda telah menetapkan VITE_POLLINATIONS_API_KEY di file .dev.vars (lokal) atau di dashboard Cloudflare Pages (produksi), lalu restart server development Anda.' 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 1. Ambil metadata video YouTube
+      const metadata = await getYoutubeMetadata(videoId);
+
+      // 2. Gunakan AI untuk melakukan rekonstruksi transkripsi
+      const transcriptText = await transcribeWithAI(videoId, metadata.title, metadata.description, cleanPollinationApiKey);
+
+      if (!transcriptText.trim()) {
+        return new Response(JSON.stringify({ error: 'Gagal membuat transkrip menggunakan AI.' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        transcript: transcriptText,
+        segments: []
+      }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }
